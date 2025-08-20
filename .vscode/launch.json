@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug Vitest Tests",
+            "type": "node",
+            "request": "launch",
+            "autoAttachChildProcesses": true,
+            "runtimeExecutable": "npm",
+            "runtimeArgs": ["run", "test", "--", "--inspect-brk"],
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen"
+        }
+    ]
+}
