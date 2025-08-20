@@ -1,0 +1,6 @@
+branchName: "i${issue.number}-${issue.title,}"
+branches:
+    - label: epic
+      skip: true
+    - label: debt
+      skip: true

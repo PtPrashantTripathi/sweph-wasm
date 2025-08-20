@@ -1,0 +1,99 @@
+{
+    "name": "sweph-wasm",
+    "version": "1.2.12",
+    "description": "High-precision Swiss Ephemeris WebAssembly bindings for TypeScript — comprehensive astronomical calculations including planetary positions, house systems, eclipses, fixed stars, and astrological computations with modern JS/TS support.",
+    "keywords": [
+        "swiss-ephemeris",
+        "astronomy",
+        "astrology",
+        "ephemeris",
+        "planetary-positions",
+        "house-systems",
+        "eclipses",
+        "fixed-stars",
+        "celestial-mechanics",
+        "astronomical-calculations",
+        "astrological-calculations",
+        "julian-day",
+        "coordinate-transformations",
+        "heliacal-events",
+        "nodes-apsides",
+        "sidereal-time",
+        "typescript",
+        "webassembly",
+        "wasm",
+        "emscripten",
+        "browser",
+        "nodejs",
+        "typesafe",
+        "high-precision"
+    ],
+    "homepage": "https://github.com/ptprashanttripathi/sweph-wasm",
+    "bugs": {
+        "url": "https://github.com/ptprashanttripathi/sweph-wasm/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/ptprashanttripathi/sweph-wasm.git"
+    },
+    "funding": {
+        "type": "github",
+        "url": "https://github.com/sponsors/ptprashanttripathi"
+    },
+    "license": "AGPL-3.0-or-later",
+    "author": {
+        "name": "Pt. Prashant Tripathi",
+        "url": "https://github.com/ptprashanttripathi",
+        "githubUsername": "ptprashanttripathi"
+    },
+    "type": "module",
+    "main": "src/index.ts",
+    "files": [
+        "src"
+    ],
+    "scripts": {
+        "build": "npm run clean && npm run build:ts && cp src/wasm/index.d.ts dist/wasm/index.d.ts",
+        "build:ts": "tsc",
+        "build:wasm": "python3 build && npm run format",
+        "clean": "rm -rf dist coverage",
+        "dev": "tsc --watch",
+        "format": "prettier --write \"**/*.{ts,js,json,md,yml}\"",
+        "format:check": "prettier --check \"**/*.{ts,js,json,md,yml}\"",
+        "lint": "eslint . --fix",
+        "lint:check": "eslint .",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui",
+        "test:watch": "vitest --watch",
+        "typecheck": "tsc --noEmit"
+    },
+    "browserslist": [
+        "defaults",
+        "supports webassembly"
+    ],
+    "dependencies": {
+        "fixed-len-array": "latest",
+        "wasp-lib": "latest"
+    },
+    "devDependencies": {
+        "@eslint/js": "latest",
+        "@types/emscripten": "latest",
+        "@typescript-eslint/parser": "latest",
+        "@vitest/coverage-v8": "latest",
+        "@vitest/ui": "latest",
+        "eslint": "latest",
+        "eslint-config-prettier": "latest",
+        "eslint-plugin-simple-import-sort": "latest",
+        "eslint-plugin-unused-imports": "latest",
+        "globals": "latest",
+        "prettier": "latest",
+        "prettier-plugin-jsdoc": "latest",
+        "typescript": "latest",
+        "typescript-eslint": "latest",
+        "vitest": "latest"
+    },
+    "engines": {
+        "node": ">=22"
+    },
+    "typeScriptVersion": "latest"
+}
