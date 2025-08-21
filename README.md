@@ -1,9 +1,16 @@
-# Swiss Ephemeris WebAssembly
+<div align="center">
+  <h3><em>Swiss Ephemeris WebAssembly</em></h3>
 
-A comprehensive TypeScript/JavaScript wrapper for the Swiss Ephemeris
-astronomical calculation library compiled to WebAssembly. This library provides
-high-precision calculations for planetary positions, house systems, eclipses,
-and various astronomical phenomena.
+  <p><strong>A comprehensive TypeScript/JavaScript wrapper for the Swiss Ephemeris astronomical calculation library compiled to WebAssembly. This library provides high-precision calculations for planetary positions, house systems, eclipses, and various astronomical phenomena.</strong></p>
+
+  <p>
+    <a href="https://www.npmjs.com/package/sweph-wasm"><img src="https://img.shields.io/npm/v/sweph-wasm.svg" alt="NPM Version"/></a>
+    <a href="https://github.com/ptprashanttripathi/sweph-wasm/actions"><img src="https://img.shields.io/github/actions/workflow/status/ptprashanttripathi/sweph-wasm/npm-publish.yml?branch=main" alt="Build Status"/></a>
+    <a href="https://github.com/ptprashanttripathi/sweph-wasm/blob/main/LICENSE"><img src="https://img.shields.io/npm/l/sweph-wasm.svg" alt="MIT License"/></a>
+    <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-Ready-blue.svg" alt="TypeScript Ready"/></a>
+    <a href="https://github.com/ptprashanttripathi/sweph-wasm/blob/main/docs"><img src="https://img.shields.io/badge/docs-available-brightgreen.svg" alt="Documentation"/></a>
+  </p>
+</div>
 
 ## Features
 
@@ -22,13 +29,13 @@ and various astronomical phenomena.
 ## Installation
 
 ```bash
-npm install swiss-ephemeris-wasm
+npm install sweph-wasm
 ```
 
 ## Quick Start
 
 ```typescript
-import SwissEPH from "swiss-ephemeris-wasm";
+import SwissEPH from "sweph-wasm";
 
 // Initialize the library
 const swe = await SwissEPH.init();
@@ -352,10 +359,10 @@ console.log(
 );
 ```
 
-## Contributing
+## 🤝 Contributing
 
-Contributions are welcome! Please read our contributing guidelines and submit
-pull requests to our repository.
+We welcome contributions! Please see our [Contributing Guide](CONTRIBUTING.md)
+for details.
 
 ## License
 
@@ -375,3 +382,44 @@ For issues and questions:
 - GitHub Issues for bug reports
 - Documentation for API reference
 - Swiss Ephemeris official documentation for calculation details
+
+
+### Development Setup
+
+```bash
+# Clone repository
+git clone https://github.com/ptprashanttripathi/sweph-wasm.git
+cd sweph-wasm
+
+# Install dependencies
+npm install
+
+# Build TypeScript
+npm run build
+
+# Build WASM test module
+npm run build:wasm
+
+# Run tests
+npm test
+
+# Generate documentation
+npm run build:docs
+```
+
+## 📄 License
+
+This project is [MIT](LICENSE) licensed.
+
+## 🙏 Acknowledgments
+
+- **Emscripten Team** - For making WebAssembly accessible
+- **TypeScript Team** - For excellent type system support
+- **WebAssembly Community** - For pushing the boundaries of web performance
+
+---
+
+<div align="center">
+<p>Made with ❤️ by <a href="https://github.com/ptprashanttripathi">Pt. Prashant Tripathi</a></p>
+<p>⭐ Star this repo if you find it helpful!</p>
+</div>
