@@ -48,40 +48,4 @@ export default {
     ],
     treeshake: true,
     external: ["module"],
-};        url({
-            include: ["**/*.wasm"],
-            limit: 0,
-            fileName: "wasm/[name][extname]", // dist/wasm/swisseph.wasm
-        }),
-
-        copy({
-            targets: [
-                { src: "src/wasm/swisseph.d.ts", dest: "dist/wasm" },
-                { src: "src/wasm/swisseph.wasm", dest: "dist" },
-                ...(epheExists
-                    ? [{ src: "swisseph/ephe/*.se1", dest: "dist/ephe" }]
-                    : []),
-            ],
-            hook: "writeBundle",
-            verbose: true, // show what’s copied
-        }),
-
-        terser(),
-    ],
-    treeshake: true,
-    external: ["module"],
-};            fileName: "wasm/[name][extname]", // dist/wa`sm/swisseph.wasm
-        }),
-        copy({
-            targets: [
-                { src: "src/wasm/swisseph.d.ts", dest: "dist/wasm" },
-                { src: "src/wasm/swisseph.wasm", dest: "dist" },
-                { src: "swisseph/ephe/*.se1", dest: "dist/ephe" },
-            ],
-            hook: "writeBundle",
-        }),
-        terser(),
-    ],
-    treeshake: true,
-    external: ["module"],
 };
