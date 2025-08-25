@@ -1,56 +1,72 @@
-# This workflow publishes the npm package to the npm registry.
-
+# This workflow is responsible for building, linting, testing, and publishing a Node.js
+# package to the npm registry. It is designed to run automatically on specific events.
 name: Publish to npm
 
 on:
+    # The `workflow_dispatch` event allows you to manually trigger the workflow from the
+    # "Actions" tab in your repository, which is useful for testing or hotfixes.
     workflow_dispatch:
+    # The `push` event triggers the workflow whenever a new Git tag is pushed to the repository.
     push:
         tags:
-            # This specifies that the workflow runs only when a new Git tag is pushed.
-            # The tag must match the format 'vX.Y.Z' (e.g., v1.0.0).
+            # This filter ensures the workflow only runs for tags that follow semantic versioning,
+            # such as 'v1.0.0', 'v2.1.5', etc.
             - "v[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
     publish:
-        name: Build, Lint, Test, and Publish
+        # The name of the job for display in the GitHub Actions UI.
+        name: Build and Publish
+        # Specifies the type of runner the job will be executed on. `ubuntu-latest` is a
+        # virtual machine with a fresh installation of Ubuntu.
         runs-on: ubuntu-latest
 
         steps:
-            # Checkout the repository
+            # Step 1: Checkout the repository code.
+            # The `actions/checkout` action is essential for making your repository's code
+            # available to the runner. It clones the code into the workflow's working directory.
             - name: Checkout Repository
               uses: actions/checkout@v4
+              with:
+                  submodules: "true" # This ensures your swisseph submodule is also cloned.
 
-            # Set up Node.js for building the project
+            # Step 2: Set up the Node.js environment.
+            # The `actions/setup-node` action configures the Node.js version and sets up
+            # authentication for the npm registry, using the provided `registry-url`.
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
                   node-version: "latest"
-                  registry-url: "https://registry.npmjs.org" # Sets the registry URL.
+                  registry-url: "https://registry.npmjs.org"
 
-            # Install dependencies
+            # Step 3: Install all project dependencies.
             - name: Install Node dependencies
               run: npm install
 
-            # Install and activate Emscripten SDK (if required for wasm build)
+            # Step 4: Install and activate the Emscripten SDK.
+            # This step is crucial for projects that require a WebAssembly build. It clones
+            # the Emscripten SDK, installs the latest version, activates it, and then
+            # sources the environment variables to make the `emcc` commands available.
+            # The `shell: bash` is used to ensure the `source` command works correctly.
             - name: Install and Activate Emscripten SDK
               run: |
                   git clone https://github.com/emscripten-core/emsdk.git ~/emsdk
                   ~/emsdk/emsdk install latest
                   ~/emsdk/emsdk activate latest
                   source ~/emsdk/emsdk_env.sh
-                  python build --env prod
+                  npm run build:wasm
               shell: bash
 
-            # Run lint
-            - name: Run lint
-              run: npm run lint
-
-            # Run Build
+            # Step 5: Run the project build.
+            # This command compiles and prepares your project for publishing.
             - name: Run Build
               run: npm run build
 
-            # Publishes the package to the npm registry.
-            # The --access public flag is required for scoped packages to be public.
+            # Step 6: Publish the package to npm.
+            # The `npm publish` command uploads the package to the npm registry.
+            # The `--access public` flag is necessary for publishing unscoped or public-scoped packages.
+            # The `env` block securely passes the `NPM_TOKEN` as an environment variable, which
+            # is used by npm for authentication. This token must be a repository secret.
             - name: Publish to npm
               run: npm publish --access public
               env:

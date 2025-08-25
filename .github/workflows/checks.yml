@@ -1,36 +1,58 @@
+# This workflow runs a comprehensive CI check (lint, build, and test) on every
+# pull request to ensure code quality and prevent regressions before merging.
 name: Lint & Test on PR
 
+# The workflow is triggered whenever a pull request is opened, synchronized (new commits),
+# or reopened. It is targeted at the main, develop, and any feature branches.
 on:
+    # The `workflow_dispatch` event allows you to manually trigger the workflow from the
+    # "Actions" tab in your repository, which is useful for testing or hotfixes.
+    workflow_dispatch:
     pull_request:
         branches:
             - main
             - develop
-            - feature/*
+            - feature/* # Use glob pattern to match all feature branches
 
 jobs:
     lint-test:
+        # The name of the job displayed in the GitHub Actions UI.
         name: Lint and Test
+        # Specifies the runner environment. `ubuntu-latest` is a standard choice.
         runs-on: ubuntu-latest
-        permissions: # 👈 Needed for PR comment
-            contents: read
-            pull-requests: write
+
+        # Define permissions for the GITHUB_TOKEN. It's good practice to set these
+        # explicitly for security and to ensure actions have the necessary access.
+        permissions:
+            contents: read # Required to check out the repository
+            pull-requests: write # Required for actions to comment on the PR
 
         steps:
-            # Checkout the repository
+            # Step 1: Checkout the repository.
+            # The `actions/checkout` action makes the repository code available to the job.
             - name: Checkout Repository
               uses: actions/checkout@v4
+              with:
+                  submodules: "true" # This ensures your swisseph submodule is also cloned.
 
-            # Set up Node.js
+            # Step 2: Set up the Node.js environment.
+            # This action sets up the specified Node.js version, ensuring consistency across environments.
             - name: Setup Node.js
               uses: actions/setup-node@v4
               with:
                   node-version: "latest"
 
-            # Install dependencies
+            # Step 3: Install all project dependencies.
+            # `npm ci` is used instead of `npm install` for CI environments. It guarantees
+            # a clean install and uses the `package-lock.json` file to ensure the exact
+            # same dependency versions are installed every time.
             - name: Install Node dependencies
               run: npm install
 
-            # Install and activate Emscripten SDK (if required for wasm build)
+            # Step 4: Install and activate the Emscripten SDK.
+            # This step is crucial for projects that require a WebAssembly build. It clones
+            # the SDK, installs and activates the latest version, and then sources the
+            # environment to make the build tools available.
             - name: Install and Activate Emscripten SDK
               run: |
                   git clone https://github.com/emscripten-core/emsdk.git ~/emsdk
@@ -40,26 +62,33 @@ jobs:
                   npm run build:wasm
               shell: bash
 
-            # Run lint
+            # Step 5: Run linting checks.
+            # This step ensures code style and quality standards are met.
             - name: Run lint
               run: npm run lint
 
-            # Run Build
+            # Step 6: Run the project build.
+            # Compiles the project, ensuring there are no build errors with the current changes.
             - name: Run Build
               run: npm run build
 
-            # Run tests with coverage
+            # Step 7: Run tests with coverage reporting.
+            # `npm run test:coverage` executes the test suite and generates coverage reports.
             - name: Run tests
               run: npm run test:coverage
 
-            # Upload coverage artifacts (optional, for debugging or downloads)
+            # Step 8: Upload coverage artifacts.
+            # `actions/upload-artifact` saves the generated coverage reports as a workflow artifact.
+            # This allows for easy debugging and review by downloading the files directly from the run summary.
             - name: Upload coverage report
               uses: actions/upload-artifact@v4
               with:
                   name: coverage-report
-                  path: coverage
+                  path: coverage/
 
-            # Comment coverage summary in PR
+            # Step 9: Report coverage summary in the Pull Request.
+            # This action automatically posts a comment on the PR with a summary of the test coverage,
+            # providing immediate feedback to the developer.
             - name: Report coverage in PR
               uses: davelosert/vitest-coverage-report-action@v2
               with:

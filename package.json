@@ -1,6 +1,6 @@
 {
     "name": "sweph-wasm",
-    "version": "1.2.12",
+    "version": "1.10.12",
     "description": "High-precision Swiss Ephemeris WebAssembly bindings for TypeScript — comprehensive astronomical calculations including planetary positions, house systems, eclipses, fixed stars, and astrological computations with modern JS/TS support.",
     "keywords": [
         "swiss-ephemeris",
@@ -47,16 +47,25 @@
         "githubUsername": "ptprashanttripathi"
     },
     "type": "module",
-    "main": "src/index.ts",
+    "exports": {
+        ".": {
+            "require": "./dist/index.cjs",
+            "browser": "./dist/index.js",
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "browser": "./dist/index.umd.js",
+    "types": "./dist/index.d.ts",
     "files": [
-        "src"
+        "dist"
     ],
     "scripts": {
-        "build": "npm run clean && npm run build:ts && cp src/wasm/index.d.ts dist/wasm/index.d.ts",
-        "build:ts": "tsc",
-        "build:wasm": "python3 build && npm run format",
+        "build": "npm run clean && rollup -c",
+        "build:wasm": "python3 -m build_tool && npm run format",
         "clean": "rm -rf dist coverage",
-        "dev": "tsc --watch",
         "format": "prettier --write \"**/*.{ts,js,json,md,yml}\"",
         "format:check": "prettier --check \"**/*.{ts,js,json,md,yml}\"",
         "lint": "eslint . --fix",
@@ -77,8 +86,11 @@
     },
     "devDependencies": {
         "@eslint/js": "latest",
+        "@rollup/plugin-commonjs": "latest",
+        "@rollup/plugin-node-resolve": "latest",
+        "@rollup/plugin-typescript": "latest",
+        "@rollup/plugin-url": "latest",
         "@types/emscripten": "latest",
-        "@typescript-eslint/parser": "latest",
         "@vitest/coverage-v8": "latest",
         "@vitest/ui": "latest",
         "eslint": "latest",
@@ -88,6 +100,10 @@
         "globals": "latest",
         "prettier": "latest",
         "prettier-plugin-jsdoc": "latest",
+        "rollup": "latest",
+        "rollup-plugin-copy": "latest",
+        "rollup-plugin-terser": "latest",
+        "tslib": "latest",
         "typescript": "latest",
         "typescript-eslint": "latest",
         "vitest": "latest"
