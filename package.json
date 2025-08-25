@@ -59,9 +59,7 @@
     "module": "./dist/index.js",
     "browser": "./dist/index.umd.js",
     "types": "./dist/index.d.ts",
-    "files": [
-        "dist"
-    ],
+    "files": ["dist"],
     "scripts": {
         "build": "npm run clean && rollup -c",
         "build:wasm": "python3 -m build_tool && npm run format",
@@ -76,10 +74,7 @@
         "test:watch": "vitest --watch",
         "typecheck": "tsc --noEmit"
     },
-    "browserslist": [
-        "defaults",
-        "supports webassembly"
-    ],
+    "browserslist": ["defaults", "supports webassembly"],
     "dependencies": {
         "fixed-len-array": "latest",
         "wasp-lib": "latest"
@@ -88,6 +83,7 @@
         "@eslint/js": "latest",
         "@rollup/plugin-commonjs": "latest",
         "@rollup/plugin-node-resolve": "latest",
+        "@rollup/plugin-terser": "latest",
         "@rollup/plugin-typescript": "latest",
         "@rollup/plugin-url": "latest",
         "@types/emscripten": "latest",
@@ -102,7 +98,6 @@
         "prettier-plugin-jsdoc": "latest",
         "rollup": "latest",
         "rollup-plugin-copy": "latest",
-        "rollup-plugin-terser": "latest",
         "tslib": "latest",
         "typescript": "latest",
         "typescript-eslint": "latest",
