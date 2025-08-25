@@ -3047,17 +3047,17 @@ export default class SwissEPH {
         ipl: number,
         iflag: number
     ): [
-            /** Phase angle (Earth-planet-sun) */
-            phase_angle: number,
-            /** Phase (illumined fraction of disc) */
-            phase: number,
-            /** Elongation of planet */
-            elongation: number,
-            /** Apparent diameter of disc */
-            diameter: number,
-            /** Apparent magnitude */
-            magnitude: number,
-        ] {
+        /** Phase angle (Earth-planet-sun) */
+        phase_angle: number,
+        /** Phase (illumined fraction of disc) */
+        phase: number,
+        /** Elongation of planet */
+        elongation: number,
+        /** Apparent diameter of disc */
+        diameter: number,
+        /** Apparent magnitude */
+        magnitude: number,
+    ] {
         const attr = ArrayPointer.alloc(this.wasm, "double", 20);
         const serr = StringPointer.alloc(this.wasm, this.AS_MAXCH);
         const flag = this.wasm._swe_pheno_ut(
@@ -3090,17 +3090,17 @@ export default class SwissEPH {
         ipl: number,
         iflag: number
     ): [
-            /** Phase angle (Earth-planet-sun) */
-            phase_angle: number,
-            /** Phase (illumined fraction of disc) */
-            phase: number,
-            /** Elongation of planet */
-            elongation: number,
-            /** Apparent diameter of disc */
-            diameter: number,
-            /** Apparent magnitude */
-            magnitude: number,
-        ] {
+        /** Phase angle (Earth-planet-sun) */
+        phase_angle: number,
+        /** Phase (illumined fraction of disc) */
+        phase: number,
+        /** Elongation of planet */
+        elongation: number,
+        /** Apparent diameter of disc */
+        diameter: number,
+        /** Apparent magnitude */
+        magnitude: number,
+    ] {
         const attr = ArrayPointer.alloc(this.wasm, "double", 20);
         const serr = StringPointer.alloc(this.wasm, this.AS_MAXCH);
         const flag = this.wasm._swe_pheno(
@@ -3384,10 +3384,11 @@ export default class SwissEPH {
      * the ephemeris path.
      *
      * @example
-     *     await swe.swe_set_ephe_path(
-     *         "https://unpkg.com/sweph-wasm/ephe/",
-     *         ["seas_18.se1", "sepl_18.se1", "semo_18.se1"]
-     *     );
+     *     await swe.swe_set_ephe_path("https://unpkg.com/sweph-wasm/ephe/", [
+     *         "seas_18.se1",
+     *         "sepl_18.se1",
+     *         "semo_18.se1",
+     *     ]);
      *
      * @param epheUrl - Base URL or directory path containing `.se1` ephemeris
      *   files.
@@ -3507,8 +3508,8 @@ export default class SwissEPH {
      * @param {number} geolat Geographic latitude in degrees
      * @param {number} elevation Elevation in meters // set observer to 124'30E,
      *   23'30N, 1250 meters above sea level; set_topo(124.5, 23.5, 1250); //
-     *   call swe_with topocentric flag let result = calc(2342341,
-     *   swe.SE_MOON, swe.SEFLG_SWIEPH | swe.SEFLG_TOPOCTR)
+     *   call swe_with topocentric flag let result = calc(2342341, swe.SE_MOON,
+     *   swe.SEFLG_SWIEPH | swe.SEFLG_TOPOCTR)
      */
     swe_set_topo(geolon: number, geolat: number, elevation: number): void {
         this.wasm._swe_set_topo(geolon, geolat, elevation);
@@ -4006,26 +4007,26 @@ export default class SwissEPH {
         objectname: string,
         helflag: number
     ): [
-            /**
-             * Limiting visual magnitude (object is visible if this value is
-             * bigger than the object's magnitude value)
-             */
-            visual_mag: number,
-            /** Altitude of the object */
-            obj_altitude: number,
-            /** Azimuth of the object */
-            obj_azimuth: number,
-            /** Altitude of the sun */
-            sun_altitude: number,
-            /** Azimuth of the sun */
-            sun_azimuth: number,
-            /** Altitude of the moon */
-            moon_altitude: number,
-            /** Azimuth of the moon */
-            moon_azimuth: number,
-            /** The object's magnitude */
-            magnitude: number,
-        ] {
+        /**
+         * Limiting visual magnitude (object is visible if this value is bigger
+         * than the object's magnitude value)
+         */
+        visual_mag: number,
+        /** Altitude of the object */
+        obj_altitude: number,
+        /** Azimuth of the object */
+        obj_azimuth: number,
+        /** Altitude of the sun */
+        sun_altitude: number,
+        /** Azimuth of the sun */
+        sun_azimuth: number,
+        /** Altitude of the moon */
+        moon_altitude: number,
+        /** Azimuth of the moon */
+        moon_azimuth: number,
+        /** The object's magnitude */
+        magnitude: number,
+    ] {
         const dgeoPtr = ArrayPointer.from(this.wasm, "double", 3, dgeo);
         const datmPtr = ArrayPointer.from(this.wasm, "double", 4, datm);
         const dobsPtr = ArrayPointer.from(this.wasm, "double", 6, dobs);

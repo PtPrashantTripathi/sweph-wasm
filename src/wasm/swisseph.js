@@ -363,6 +363,7 @@ async function Module(moduleArg = {}) {
             name === "FS_createPath" ||
             name === "FS_createDataFile" ||
             name === "FS_createPreloadedFile" ||
+            name === "FS_preloadFile" ||
             name === "FS_unlink" ||
             name === "addRunDependency" || // The old FS has some functionality that WasmFS lacks.
             name === "FS_createLazyFile" ||
@@ -591,47 +592,44 @@ async function Module(moduleArg = {}) {
     function addRunDependency(id) {
         runDependencies++;
         Module["monitorRunDependencies"]?.(runDependencies);
-        if (id) {
-            assert(!runDependencyTracking[id]);
-            runDependencyTracking[id] = 1;
-            if (
-                runDependencyWatcher === null &&
-                typeof setInterval != "undefined"
-            ) {
-                // Check for missing dependencies every few seconds
-                runDependencyWatcher = setInterval(() => {
-                    if (ABORT) {
-                        clearInterval(runDependencyWatcher);
-                        runDependencyWatcher = null;
-                        return;
+        assert(id, "addRunDependency requires an ID");
+        assert(!runDependencyTracking[id]);
+        runDependencyTracking[id] = 1;
+        if (
+            runDependencyWatcher === null &&
+            typeof setInterval != "undefined"
+        ) {
+            // Check for missing dependencies every few seconds
+            runDependencyWatcher = setInterval(() => {
+                if (ABORT) {
+                    clearInterval(runDependencyWatcher);
+                    runDependencyWatcher = null;
+                    return;
+                }
+                var shown = false;
+                for (var dep in runDependencyTracking) {
+                    if (!shown) {
+                        shown = true;
+                        err("still waiting on run dependencies:");
                     }
-                    var shown = false;
-                    for (var dep in runDependencyTracking) {
-                        if (!shown) {
-                            shown = true;
-                            err("still waiting on run dependencies:");
-                        }
-                        err(`dependency: ${dep}`);
-                    }
-                    if (shown) {
-                        err("(end of list)");
-                    }
-                }, 1e4);
-            }
-        } else {
-            err("warning: run dependency added without ID");
+                    err(`dependency: ${dep}`);
+                }
+                if (shown) {
+                    err("(end of list)");
+                }
+            }, 1e4);
+            // Prevent this timer from keeping the runtime alive if nothing
+            // else is.
+            runDependencyWatcher.unref?.();
         }
     }
 
     function removeRunDependency(id) {
         runDependencies--;
         Module["monitorRunDependencies"]?.(runDependencies);
-        if (id) {
-            assert(runDependencyTracking[id]);
-            delete runDependencyTracking[id];
-        } else {
-            err("warning: run dependency removed without ID");
-        }
+        assert(id, "removeRunDependency requires an ID");
+        assert(runDependencyTracking[id]);
+        delete runDependencyTracking[id];
         if (runDependencies == 0) {
             if (runDependencyWatcher !== null) {
                 clearInterval(runDependencyWatcher);
@@ -742,11 +740,7 @@ async function Module(moduleArg = {}) {
     }
 
     async function instantiateAsync(binary, binaryFile, imports) {
-        if (
-            !binary &&
-            typeof WebAssembly.instantiateStreaming == "function" &&
-            !ENVIRONMENT_IS_NODE
-        ) {
+        if (!binary && !ENVIRONMENT_IS_NODE) {
             try {
                 var response = fetch(binaryFile, {
                     credentials: "same-origin",
@@ -1147,8 +1141,6 @@ async function Module(moduleArg = {}) {
             return UTF8Decoder.decode(heapOrArray.subarray(idx, endPtr));
         }
         var str = "";
-        // If building with TextDecoder, we have already computed the string length
-        // above, so test loop end condition against that
         while (idx < endPtr) {
             // For UTF8 byte structure, see:
             // http://en.wikipedia.org/wiki/UTF-8#Description
@@ -1848,94 +1840,6 @@ async function Module(moduleArg = {}) {
         },
     };
 
-    var asyncLoad = async url => {
-        var arrayBuffer = await readAsync(url);
-        assert(
-            arrayBuffer,
-            `Loading data file "${url}" failed (no arrayBuffer).`
-        );
-        return new Uint8Array(arrayBuffer);
-    };
-
-    var FS_createDataFile = (...args) => FS.createDataFile(...args);
-
-    var getUniqueRunDependency = id => {
-        var orig = id;
-        while (1) {
-            if (!runDependencyTracking[id]) return id;
-            id = orig + Math.random();
-        }
-    };
-
-    var preloadPlugins = [];
-
-    var FS_handledByPreloadPlugin = (byteArray, fullname, finish, onerror) => {
-        // Ensure plugins are ready.
-        if (typeof Browser != "undefined") Browser.init();
-        var handled = false;
-        preloadPlugins.forEach(plugin => {
-            if (handled) return;
-            if (plugin["canHandle"](fullname)) {
-                plugin["handle"](byteArray, fullname, finish, onerror);
-                handled = true;
-            }
-        });
-        return handled;
-    };
-
-    var FS_createPreloadedFile = (
-        parent,
-        name,
-        url,
-        canRead,
-        canWrite,
-        onload,
-        onerror,
-        dontCreateFile,
-        canOwn,
-        preFinish
-    ) => {
-        // TODO we should allow people to just pass in a complete filename instead
-        // of parent and name being that we just join them anyways
-        var fullname = name
-            ? PATH_FS.resolve(PATH.join2(parent, name))
-            : parent;
-        var dep = getUniqueRunDependency(`cp ${fullname}`);
-        // might have several active requests for the same fullname
-        function processData(byteArray) {
-            function finish(byteArray) {
-                preFinish?.();
-                if (!dontCreateFile) {
-                    FS_createDataFile(
-                        parent,
-                        name,
-                        byteArray,
-                        canRead,
-                        canWrite,
-                        canOwn
-                    );
-                }
-                onload?.();
-                removeRunDependency(dep);
-            }
-            if (
-                FS_handledByPreloadPlugin(byteArray, fullname, finish, () => {
-                    onerror?.();
-                    removeRunDependency(dep);
-                })
-            ) {
-                return;
-            }
-            finish(byteArray);
-        }
-        addRunDependency(dep);
-        if (typeof url == "string") {
-            asyncLoad(url).then(processData, onerror);
-        } else {
-            processData(url);
-        }
-    };
-
     var FS_modeStringToFlags = str => {
         var flagModes = {
             r: 0,
@@ -2107,6 +2011,110 @@ async function Module(moduleArg = {}) {
         ENOTRECOVERABLE: 56,
         EOWNERDEAD: 62,
         ESTRPIPE: 135,
+    };
+
+    var asyncLoad = async url => {
+        var arrayBuffer = await readAsync(url);
+        assert(
+            arrayBuffer,
+            `Loading data file "${url}" failed (no arrayBuffer).`
+        );
+        return new Uint8Array(arrayBuffer);
+    };
+
+    var FS_createDataFile = (...args) => FS.createDataFile(...args);
+
+    var getUniqueRunDependency = id => {
+        var orig = id;
+        while (1) {
+            if (!runDependencyTracking[id]) return id;
+            id = orig + Math.random();
+        }
+    };
+
+    var preloadPlugins = [];
+
+    var FS_handledByPreloadPlugin = async (byteArray, fullname) => {
+        // Ensure plugins are ready.
+        if (typeof Browser != "undefined") Browser.init();
+        for (var plugin of preloadPlugins) {
+            if (plugin["canHandle"](fullname)) {
+                assert(
+                    plugin["handle"].constructor.name === "AsyncFunction",
+                    "Filesystem plugin handlers must be async functions (See #24914)"
+                );
+                return plugin["handle"](byteArray, fullname);
+            }
+        }
+        // In no plugin handled this file then return the original/unmodified
+        // byteArray.
+        return byteArray;
+    };
+
+    var FS_preloadFile = async (
+        parent,
+        name,
+        url,
+        canRead,
+        canWrite,
+        dontCreateFile,
+        canOwn,
+        preFinish
+    ) => {
+        // TODO we should allow people to just pass in a complete filename instead
+        // of parent and name being that we just join them anyways
+        var fullname = name
+            ? PATH_FS.resolve(PATH.join2(parent, name))
+            : parent;
+        var dep = getUniqueRunDependency(`cp ${fullname}`);
+        // might have several active requests for the same fullname
+        addRunDependency(dep);
+        try {
+            var byteArray = url;
+            if (typeof url == "string") {
+                byteArray = await asyncLoad(url);
+            }
+            byteArray = await FS_handledByPreloadPlugin(byteArray, fullname);
+            preFinish?.();
+            if (!dontCreateFile) {
+                FS_createDataFile(
+                    parent,
+                    name,
+                    byteArray,
+                    canRead,
+                    canWrite,
+                    canOwn
+                );
+            }
+        } finally {
+            removeRunDependency(dep);
+        }
+    };
+
+    var FS_createPreloadedFile = (
+        parent,
+        name,
+        url,
+        canRead,
+        canWrite,
+        onload,
+        onerror,
+        dontCreateFile,
+        canOwn,
+        preFinish
+    ) => {
+        FS_preloadFile(
+            parent,
+            name,
+            url,
+            canRead,
+            canWrite,
+            dontCreateFile,
+            canOwn,
+            preFinish
+        )
+            .then(onload)
+            .catch(onerror);
     };
 
     var FS = {
@@ -3941,12 +3949,12 @@ async function Module(moduleArg = {}) {
             return dir + "/" + path;
         },
         writeStat(buf, stat) {
-            SAFE_HEAP_STORE(HEAP32, buf >> 2, stat.dev);
-            SAFE_HEAP_STORE(HEAP32, (buf + 4) >> 2, stat.mode);
+            SAFE_HEAP_STORE(HEAPU32, buf >> 2, stat.dev);
+            SAFE_HEAP_STORE(HEAPU32, (buf + 4) >> 2, stat.mode);
             SAFE_HEAP_STORE(HEAPU32, (buf + 8) >> 2, stat.nlink);
-            SAFE_HEAP_STORE(HEAP32, (buf + 12) >> 2, stat.uid);
-            SAFE_HEAP_STORE(HEAP32, (buf + 16) >> 2, stat.gid);
-            SAFE_HEAP_STORE(HEAP32, (buf + 20) >> 2, stat.rdev);
+            SAFE_HEAP_STORE(HEAPU32, (buf + 12) >> 2, stat.uid);
+            SAFE_HEAP_STORE(HEAPU32, (buf + 16) >> 2, stat.gid);
+            SAFE_HEAP_STORE(HEAPU32, (buf + 20) >> 2, stat.rdev);
             SAFE_HEAP_STORE(HEAP64, (buf + 24) >> 3, BigInt(stat.size));
             SAFE_HEAP_STORE(HEAP32, (buf + 32) >> 2, 4096);
             SAFE_HEAP_STORE(HEAP32, (buf + 36) >> 2, stat.blocks);
@@ -3987,17 +3995,17 @@ async function Module(moduleArg = {}) {
             return 0;
         },
         writeStatFs(buf, stats) {
-            SAFE_HEAP_STORE(HEAP32, (buf + 4) >> 2, stats.bsize);
-            SAFE_HEAP_STORE(HEAP32, (buf + 40) >> 2, stats.bsize);
-            SAFE_HEAP_STORE(HEAP32, (buf + 8) >> 2, stats.blocks);
-            SAFE_HEAP_STORE(HEAP32, (buf + 12) >> 2, stats.bfree);
-            SAFE_HEAP_STORE(HEAP32, (buf + 16) >> 2, stats.bavail);
-            SAFE_HEAP_STORE(HEAP32, (buf + 20) >> 2, stats.files);
-            SAFE_HEAP_STORE(HEAP32, (buf + 24) >> 2, stats.ffree);
-            SAFE_HEAP_STORE(HEAP32, (buf + 28) >> 2, stats.fsid);
-            SAFE_HEAP_STORE(HEAP32, (buf + 44) >> 2, stats.flags);
+            SAFE_HEAP_STORE(HEAPU32, (buf + 4) >> 2, stats.bsize);
+            SAFE_HEAP_STORE(HEAPU32, (buf + 60) >> 2, stats.bsize);
+            SAFE_HEAP_STORE(HEAP64, (buf + 8) >> 3, BigInt(stats.blocks));
+            SAFE_HEAP_STORE(HEAP64, (buf + 16) >> 3, BigInt(stats.bfree));
+            SAFE_HEAP_STORE(HEAP64, (buf + 24) >> 3, BigInt(stats.bavail));
+            SAFE_HEAP_STORE(HEAP64, (buf + 32) >> 3, BigInt(stats.files));
+            SAFE_HEAP_STORE(HEAP64, (buf + 40) >> 3, BigInt(stats.ffree));
+            SAFE_HEAP_STORE(HEAPU32, (buf + 48) >> 2, stats.fsid);
+            SAFE_HEAP_STORE(HEAPU32, (buf + 64) >> 2, stats.flags);
             // ST_NOSUID
-            SAFE_HEAP_STORE(HEAP32, (buf + 36) >> 2, stats.namelen);
+            SAFE_HEAP_STORE(HEAPU32, (buf + 56) >> 2, stats.namelen);
         },
         doMsync(addr, stream, len, flags, offset) {
             if (!FS.isFile(stream.node.mode)) {
@@ -4509,6 +4517,8 @@ async function Module(moduleArg = {}) {
 
     FS.createPreloadedFile = FS_createPreloadedFile;
 
+    FS.preloadFile = FS_preloadFile;
+
     FS.staticInit();
 
     // End JS library code
@@ -4851,6 +4861,7 @@ async function Module(moduleArg = {}) {
         "SYSCALLS",
         "preloadPlugins",
         "FS_createPreloadedFile",
+        "FS_preloadFile",
         "FS_modeStringToFlags",
         "FS_getMode",
         "FS_stdin_getChar_buffer",

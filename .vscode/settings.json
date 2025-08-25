@@ -14,5 +14,9 @@
     },
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter"
+    },
+    "search.useIgnoreFiles": false,
+    "[html]": {
+        "editor.defaultFormatter": "vscode.html-language-features"
     }
 }

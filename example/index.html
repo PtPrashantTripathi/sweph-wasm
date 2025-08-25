@@ -1,455 +1,410 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Astrology Chart Calculator</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-    </head>
 
-    <body
-        class="bg-gradient-to-br from-indigo-50 to-purple-100 min-h-screen p-6">
-        <div class="max-w-6xl mx-auto">
-            <!-- Header -->
-            <div class="text-center mb-8">
-                <h1 class="text-4xl font-bold text-gray-800 mb-2">
-                    Astrology Chart Calculator
-                </h1>
-                <p class="text-gray-600">
-                    Calculate planetary positions and houses for any birth data
-                </p>
-            </div>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Astrology Chart Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
 
-            <!-- Form Section -->
+<body class="bg-gradient-to-br from-indigo-50 to-purple-100 min-h-screen p-6">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">
+                Astrology Chart Calculator
+            </h1>
+            <p class="text-gray-600">
+                Calculate planetary positions and houses for any birth data
+            </p>
+        </div>
+
+        <!-- Form Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+                Birth Information
+            </h2>
+            <form id="birthForm" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Date Inputs -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Birth Date</label>
+                    <input type="date" id="birthDate" value="2025-08-15"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+                </div>
+
+                <!-- Time Inputs -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Birth Time</label>
+                    <input type="time" id="birthTime" value="01:55"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
+                </div>
+
+                <!-- Timezone -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Timezone</label>
+                    <select id="timezone"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                        <!-- Options will be populated dynamically -->
+                    </select>
+                </div>
+
+                <!-- Latitude -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Latitude</label>
+                    <input type="number" id="latitude" value="40.7128" step="0.0001"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        placeholder="e.g., 40.7128" />
+                </div>
+
+                <!-- Longitude -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Longitude</label>
+                    <input type="number" id="longitude" value="-74.006" step="0.0001"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                        placeholder="e.g., -74.006" />
+                </div>
+
+                <!-- House System -->
+                <div>
+                    <label for="house-system" class="block text-sm font-medium text-gray-700 mb-2">
+                        House System
+                    </label>
+                    <select id="house-system"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                        <option value="P" selected>Placidus</option>
+                        <option value="A">Equal</option>
+                        <option value="B">Alcabitius</option>
+                        <option value="C">Campanus</option>
+                        <option value="D">Equal (MC)</option>
+                        <option value="E">Equal</option>
+                        <option value="F">Carter poli-equ.</option>
+                        <option value="G">Gauquelin sectors</option>
+                        <option value="H">Horizon / Azimut</option>
+                        <option value="I">Sunshine</option>
+                        <option value="i">Sunshine / Alt.</option>
+                        <option value="J">Savard-A</option>
+                        <option value="K">Koch</option>
+                        <option value="L">Pullen SD</option>
+                        <option value="M">Morinus</option>
+                        <option value="N">Equal / 1=Aries</option>
+                        <option value="O">Porphyry</option>
+                        <option value="Q">Pullen SR</option>
+                        <option value="R">Regiomontanus</option>
+                        <option value="S">Sripati</option>
+                        <option value="T">Polich / Page</option>
+                        <option value="U">Krusinski-Pisa-Goelzer</option>
+                        <option value="V">Equal / Vehlow</option>
+                        <option value="W">Equal / Whole Sign</option>
+                        <option value="X">Axial Rotation / Meridian</option>
+                        <option value="Y">APC Houses</option>
+                    </select>
+                </div>
+
+                <!-- Ayanamsa -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Ayanamsa</label>
+                    <select id="ayanamsa"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                        <option value="0">Fagan Bradley</option>
+                        <option value="1" selected>Lahiri</option>
+                        <option value="2">Deluce</option>
+                        <option value="3">Raman</option>
+                        <option value="4">Ushashashi</option>
+                        <option value="5">Krishnamurti</option>
+                        <option value="6">Djwhal Khul</option>
+                        <option value="7">Yukteshwar</option>
+                        <option value="8">Jn Bhasin</option>
+                        <option value="9">Babyl Kugler1</option>
+                        <option value="10">Babyl Kugler2</option>
+                        <option value="11">Babyl Kugler3</option>
+                        <option value="12">Babyl Huber</option>
+                        <option value="13">Babyl Etpsc</option>
+                        <option value="14">Aldebaran 15Tau</option>
+                        <option value="15">Hipparchos</option>
+                        <option value="16">Sassanian</option>
+                        <option value="17">Galcent 0Sag</option>
+                        <option value="18">J2000</option>
+                        <option value="19">J1900</option>
+                        <option value="20">B1950</option>
+                        <option value="21">Suryasiddhanta</option>
+                        <option value="22">Suryasiddhanta Msun</option>
+                        <option value="23">Aryabhata</option>
+                        <option value="24">Aryabhata Msun</option>
+                        <option value="25">Ss Revati</option>
+                        <option value="26">Ss Citra</option>
+                        <option value="27">True Citra</option>
+                        <option value="28">True Revati</option>
+                        <option value="29">True Pushya</option>
+                        <option value="30">Galcent Rgilbrand</option>
+                        <option value="31">Galequ Iau1958</option>
+                        <option value="32">Galequ True</option>
+                        <option value="33">Galequ Mula</option>
+                        <option value="34">Galalign Mardyks</option>
+                        <option value="35">True Mula</option>
+                        <option value="36">Galcent Mula Wilhelm</option>
+                        <option value="37">Aryabhata 522</option>
+                        <option value="38">Babyl Britton</option>
+                        <option value="39">True Sheoran</option>
+                        <option value="40">Galcent Cochrane</option>
+                        <option value="41">Galequ Fiorenza</option>
+                        <option value="42">Valens Moon</option>
+                        <option value="43">Lahiri 1940</option>
+                        <option value="44">Lahiri Vp285</option>
+                        <option value="45">Krishnamurti Vp291</option>
+                        <option value="46">Lahiri Icrc</option>
+                    </select>
+                </div>
+
+                <!-- Calculate Button -->
+                <div class="flex items-end">
+                    <button type="submit"
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 transform hover:scale-105">
+                        Calculate Chart
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Results Section -->
+        <div id="results" class="hidden">
+            <!-- Planets Table -->
             <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
                 <h2 class="text-2xl font-semibold text-gray-800 mb-6">
-                    Birth Information
+                    Planetary Positions
                 </h2>
-                <form
-                    id="birthForm"
-                    class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Date Inputs -->
-                    <div>
-                        <label
-                            class="block text-sm font-medium text-gray-700 mb-2"
-                            >Birth Date</label
-                        >
-                        <input
-                            type="date"
-                            id="birthDate"
-                            value="2025-08-15"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
-                    </div>
-
-                    <!-- Time Inputs -->
-                    <div>
-                        <label
-                            class="block text-sm font-medium text-gray-700 mb-2"
-                            >Birth Time</label
-                        >
-                        <input
-                            type="time"
-                            id="birthTime"
-                            value="01:55"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" />
-                    </div>
-
-                    <!-- Timezone -->
-                    <div>
-                        <label
-                            class="block text-sm font-medium text-gray-700 mb-2"
-                            >Timezone</label
-                        >
-                        <select
-                            id="timezone"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                            <!-- Options will be populated dynamically -->
-                        </select>
-                    </div>
-
-                    <!-- Latitude -->
-                    <div>
-                        <label
-                            class="block text-sm font-medium text-gray-700 mb-2"
-                            >Latitude</label
-                        >
-                        <input
-                            type="number"
-                            id="latitude"
-                            value="40.7128"
-                            step="0.0001"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            placeholder="e.g., 40.7128" />
-                    </div>
-
-                    <!-- Longitude -->
-                    <div>
-                        <label
-                            class="block text-sm font-medium text-gray-700 mb-2"
-                            >Longitude</label
-                        >
-                        <input
-                            type="number"
-                            id="longitude"
-                            value="-74.006"
-                            step="0.0001"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            placeholder="e.g., -74.006" />
-                    </div>
-
-                    <!-- House System -->
-                    <div>
-                        <label
-                            for="house-system"
-                            class="block text-sm font-medium text-gray-700 mb-2">
-                            House System
-                        </label>
-                        <select
-                            id="house-system"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                            <option value="P" selected>Placidus</option>
-                            <option value="A">Equal</option>
-                            <option value="B">Alcabitius</option>
-                            <option value="C">Campanus</option>
-                            <option value="D">Equal (MC)</option>
-                            <option value="E">Equal</option>
-                            <option value="F">Carter poli-equ.</option>
-                            <option value="G">Gauquelin sectors</option>
-                            <option value="H">Horizon / Azimut</option>
-                            <option value="I">Sunshine</option>
-                            <option value="i">Sunshine / Alt.</option>
-                            <option value="J">Savard-A</option>
-                            <option value="K">Koch</option>
-                            <option value="L">Pullen SD</option>
-                            <option value="M">Morinus</option>
-                            <option value="N">Equal / 1=Aries</option>
-                            <option value="O">Porphyry</option>
-                            <option value="Q">Pullen SR</option>
-                            <option value="R">Regiomontanus</option>
-                            <option value="S">Sripati</option>
-                            <option value="T">Polich / Page</option>
-                            <option value="U">Krusinski-Pisa-Goelzer</option>
-                            <option value="V">Equal / Vehlow</option>
-                            <option value="W">Equal / Whole Sign</option>
-                            <option value="X">Axial Rotation / Meridian</option>
-                            <option value="Y">APC Houses</option>
-                        </select>
-                    </div>
-
-                    <!-- Ayanamsa -->
-                    <div>
-                        <label
-                            class="block text-sm font-medium text-gray-700 mb-2"
-                            >Ayanamsa</label
-                        >
-                        <select
-                            id="ayanamsa"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                            <option value="0">Fagan Bradley</option>
-                            <option value="1" selected>Lahiri</option>
-                            <option value="2">Deluce</option>
-                            <option value="3">Raman</option>
-                            <option value="4">Ushashashi</option>
-                            <option value="5">Krishnamurti</option>
-                            <option value="6">Djwhal Khul</option>
-                            <option value="7">Yukteshwar</option>
-                            <option value="8">Jn Bhasin</option>
-                            <option value="9">Babyl Kugler1</option>
-                            <option value="10">Babyl Kugler2</option>
-                            <option value="11">Babyl Kugler3</option>
-                            <option value="12">Babyl Huber</option>
-                            <option value="13">Babyl Etpsc</option>
-                            <option value="14">Aldebaran 15Tau</option>
-                            <option value="15">Hipparchos</option>
-                            <option value="16">Sassanian</option>
-                            <option value="17">Galcent 0Sag</option>
-                            <option value="18">J2000</option>
-                            <option value="19">J1900</option>
-                            <option value="20">B1950</option>
-                            <option value="21">Suryasiddhanta</option>
-                            <option value="22">Suryasiddhanta Msun</option>
-                            <option value="23">Aryabhata</option>
-                            <option value="24">Aryabhata Msun</option>
-                            <option value="25">Ss Revati</option>
-                            <option value="26">Ss Citra</option>
-                            <option value="27">True Citra</option>
-                            <option value="28">True Revati</option>
-                            <option value="29">True Pushya</option>
-                            <option value="30">Galcent Rgilbrand</option>
-                            <option value="31">Galequ Iau1958</option>
-                            <option value="32">Galequ True</option>
-                            <option value="33">Galequ Mula</option>
-                            <option value="34">Galalign Mardyks</option>
-                            <option value="35">True Mula</option>
-                            <option value="36">Galcent Mula Wilhelm</option>
-                            <option value="37">Aryabhata 522</option>
-                            <option value="38">Babyl Britton</option>
-                            <option value="39">True Sheoran</option>
-                            <option value="40">Galcent Cochrane</option>
-                            <option value="41">Galequ Fiorenza</option>
-                            <option value="42">Valens Moon</option>
-                            <option value="43">Lahiri 1940</option>
-                            <option value="44">Lahiri Vp285</option>
-                            <option value="45">Krishnamurti Vp291</option>
-                            <option value="46">Lahiri Icrc</option>
-                        </select>
-                    </div>
-
-                    <!-- Calculate Button -->
-                    <div class="flex items-end">
-                        <button
-                            type="submit"
-                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 transform hover:scale-105">
-                            Calculate Chart
-                        </button>
-                    </div>
-                </form>
+                <div class="overflow-x-auto">
+                    <table class="w-full table-auto">
+                        <thead>
+                            <tr class="bg-gray-50">
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Planet
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Sign
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Position
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Longitude
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Latitude
+                                </th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Distance (AU)
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="planetsTable" class="bg-white divide-y divide-gray-200">
+                            <!-- Planets data will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
 
-            <!-- Results Section -->
-            <div id="results" class="hidden">
-                <!-- Planets Table -->
-                <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
-                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">
-                        Planetary Positions
-                    </h2>
+            <!-- Houses Table -->
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-6">
+                    House Cusps
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="overflow-x-auto">
                         <table class="w-full table-auto">
                             <thead>
                                 <tr class="bg-gray-50">
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Planet
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        House
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Sign
                                     </th>
                                     <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                         Position
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Longitude
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Latitude
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                        Distance (AU)
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody
-                                id="planetsTable"
-                                class="bg-white divide-y divide-gray-200">
-                                <!-- Planets data will be inserted here -->
+                            <tbody id="housesTable" class="bg-white divide-y divide-gray-200">
+                                <!-- Houses data will be inserted here -->
                             </tbody>
                         </table>
                     </div>
-                </div>
 
-                <!-- Houses Table -->
-                <div class="bg-white rounded-xl shadow-lg p-6">
-                    <h2 class="text-2xl font-semibold text-gray-800 mb-6">
-                        House Cusps
-                    </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="overflow-x-auto">
-                            <table class="w-full table-auto">
-                                <thead>
-                                    <tr class="bg-gray-50">
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            House
-                                        </th>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Sign
-                                        </th>
-                                        <th
-                                            class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Position
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody
-                                    id="housesTable"
-                                    class="bg-white divide-y divide-gray-200">
-                                    <!-- Houses data will be inserted here -->
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Important Points -->
-                        <div class="bg-gray-50 rounded-lg p-4">
-                            <h3
-                                class="text-lg font-semibold text-gray-800 mb-4">
-                                Important Points
-                            </h3>
-                            <div id="importantPoints" class="space-y-2">
-                                <!-- Important points will be inserted here -->
-                            </div>
+                    <!-- Important Points -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">
+                            Important Points
+                        </h3>
+                        <div id="importantPoints" class="space-y-2">
+                            <!-- Important points will be inserted here -->
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
 
-        <script type="module">
-            // Import your SwissEPH module
-            import SwissEPH from "../dist/index.js";
+    <script type="module">
+        // Import your SwissEPH module
+        import SwissEPH from "https://unpkg.com/sweph-wasm";
 
-            // Populate timezone dropdown with all supported timezones
-            function populateTimezones() {
-                const supportedTimeZones = Intl.supportedValuesOf("timeZone");
-                const timezoneSelect = document.getElementById("timezone");
+        // Populate timezone dropdown with all supported timezones
+        function populateTimezones() {
+            const supportedTimeZones = Intl.supportedValuesOf("timeZone");
+            const timezoneSelect = document.getElementById("timezone");
 
-                // Clear existing options
-                timezoneSelect.innerHTML = "";
+            // Clear existing options
+            timezoneSelect.innerHTML = "";
 
-                // Get current timezone as default
-                const userTimezone =
-                    Intl.DateTimeFormat().resolvedOptions().timeZone;
+            // Get current timezone as default
+            const userTimezone =
+                Intl.DateTimeFormat().resolvedOptions().timeZone;
 
-                // Create options for each timezone
-                supportedTimeZones.forEach(timezone => {
-                    const option = document.createElement("option");
-                    option.value = timezone;
-                    option.textContent = timezone.replace(/_/g, " ");
+            // Create options for each timezone
+            supportedTimeZones.forEach(timezone => {
+                const option = document.createElement("option");
+                option.value = timezone;
+                option.textContent = timezone.replace(/_/g, " ");
 
-                    // Set user's current timezone as selected
-                    if (timezone === userTimezone) {
-                        option.selected = true;
-                    }
+                // Set user's current timezone as selected
+                if (timezone === userTimezone) {
+                    option.selected = true;
+                }
 
-                    timezoneSelect.appendChild(option);
+                timezoneSelect.appendChild(option);
+            });
+        }
+
+        // Get timezone offset in hours for a given timezone
+        function getTimezoneOffset(timezone) {
+            const now = new Date();
+            const utc = new Date(
+                now.getTime() + now.getTimezoneOffset() * 60000
+            );
+            const targetTime = new Date(
+                utc.toLocaleString("en-US", { timeZone: timezone })
+            );
+            const offset =
+                (targetTime.getTime() - utc.getTime()) / (1000 * 60 * 60);
+            return offset;
+        }
+
+        // Zodiac signs array
+        const zodiacSigns = [
+            "Aries",
+            "Taurus",
+            "Gemini",
+            "Cancer",
+            "Leo",
+            "Virgo",
+            "Libra",
+            "Scorpio",
+            "Sagittarius",
+            "Capricorn",
+            "Aquarius",
+            "Pisces",
+        ];
+
+        // Convert decimal degrees to degrees, minutes, seconds
+        function decimalToDMS(decimal) {
+            const degrees = Math.floor(Math.abs(decimal));
+            const minutes = Math.floor((Math.abs(decimal) - degrees) * 60);
+            const seconds = Math.round(
+                ((Math.abs(decimal) - degrees) * 60 - minutes) * 60
+            );
+            const sign = decimal < 0 ? "-" : "";
+            return `${sign}${degrees}° ${minutes}' ${seconds}"`;
+        }
+
+        // Convert longitude to zodiac sign and degree
+        function longitudeToZodiac(longitude) {
+            const signIndex = Math.floor(longitude / 30);
+            const degreeInSign = longitude % 30;
+            const degrees = Math.floor(degreeInSign);
+            const minutes = Math.floor((degreeInSign - degrees) * 60);
+            const seconds = Math.round(
+                ((degreeInSign - degrees) * 60 - minutes) * 60
+            );
+
+            return {
+                sign: zodiacSigns[signIndex],
+                position: `${degrees}° ${minutes}' ${seconds}"`,
+            };
+        }
+
+        // Function to calculate chart (replace with actual SwissEPH integration)
+        async function calculateChart(birthData) {
+            // This is where you would integrate your SwissEPH code
+            const ephemerisBaseUrl = "https://unpkg.com/sweph-wasm/ephe";
+            const requiredEphemerisFiles = [
+                "seas_18.se1",
+                "sepl_18.se1",
+                "semo_18.se1",
+                "sefstars.txt",
+            ];
+
+            const swe = await SwissEPH.init();
+            await swe.swe_set_ephe_path(
+                ephemerisBaseUrl,
+                requiredEphemerisFiles
+            );
+            swe.swe_set_sid_mode(birthData.ayanamsa, 0, 0);
+
+            const jd = swe.swe_julday(
+                birthData.year,
+                birthData.month,
+                birthData.day,
+                (birthData.hour * 60 +
+                    birthData.minute -
+                    birthData.timezone * 60) /
+                (24 * 60),
+                swe.SE_GREG_CAL
+            );
+
+            // Calculate planets
+            const planets = [];
+            for (let i = 0; i <= 9; i++) {
+                const position = swe.swe_calc_ut(jd, i, 0);
+                planets.push({
+                    planet: swe.swe_get_planet_name(i),
+                    longitude: position[0],
+                    latitude: position[1],
+                    distance: position[2],
                 });
             }
 
-            // Get timezone offset in hours for a given timezone
-            function getTimezoneOffset(timezone) {
-                const now = new Date();
-                const utc = new Date(
-                    now.getTime() + now.getTimezoneOffset() * 60000
-                );
-                const targetTime = new Date(
-                    utc.toLocaleString("en-US", { timeZone: timezone })
-                );
-                const offset =
-                    (targetTime.getTime() - utc.getTime()) / (1000 * 60 * 60);
-                return offset;
-            }
+            // Calculate houses
+            const houses = swe.swe_houses(
+                jd,
+                birthData.lat,
+                birthData.lon,
+                birthData.hs
+            );
 
-            // Zodiac signs array
-            const zodiacSigns = [
-                "Aries",
-                "Taurus",
-                "Gemini",
-                "Cancer",
-                "Leo",
-                "Virgo",
-                "Libra",
-                "Scorpio",
-                "Sagittarius",
-                "Capricorn",
-                "Aquarius",
-                "Pisces",
-            ];
+            return { planets, houses };
+        }
 
-            // Convert decimal degrees to degrees, minutes, seconds
-            function decimalToDMS(decimal) {
-                const degrees = Math.floor(Math.abs(decimal));
-                const minutes = Math.floor((Math.abs(decimal) - degrees) * 60);
-                const seconds = Math.round(
-                    ((Math.abs(decimal) - degrees) * 60 - minutes) * 60
-                );
-                const sign = decimal < 0 ? "-" : "";
-                return `${sign}${degrees}° ${minutes}' ${seconds}"`;
-            }
+        // Display planets in table
+        function displayPlanets(planets) {
+            const tbody = document.getElementById("planetsTable");
+            tbody.innerHTML = "";
 
-            // Convert longitude to zodiac sign and degree
-            function longitudeToZodiac(longitude) {
-                const signIndex = Math.floor(longitude / 30);
-                const degreeInSign = longitude % 30;
-                const degrees = Math.floor(degreeInSign);
-                const minutes = Math.floor((degreeInSign - degrees) * 60);
-                const seconds = Math.round(
-                    ((degreeInSign - degrees) * 60 - minutes) * 60
-                );
+            planets.forEach((planet, index) => {
+                const zodiac = longitudeToZodiac(planet.longitude);
+                const row = document.createElement("tr");
+                row.className = index % 2 === 0 ? "bg-white" : "bg-gray-50";
 
-                return {
-                    sign: zodiacSigns[signIndex],
-                    position: `${degrees}° ${minutes}' ${seconds}"`,
-                };
-            }
-
-            // Function to calculate chart (replace with actual SwissEPH integration)
-            async function calculateChart(birthData) {
-                // This is where you would integrate your SwissEPH code
-                const ephemerisBaseUrl = "../swisseph/ephe";
-                const requiredEphemerisFiles = [
-                    "seas_18.se1",
-                    "sepl_18.se1",
-                    "semo_18.se1",
-                    "sefstars.txt",
-                ];
-
-                const swe = await SwissEPH.init();
-                await swe.swe_set_ephe_path(
-                    ephemerisBaseUrl,
-                    requiredEphemerisFiles
-                );
-                swe.swe_set_sid_mode(birthData.ayanamsa, 0, 0);
-
-                const jd = swe.swe_julday(
-                    birthData.year,
-                    birthData.month,
-                    birthData.day,
-                    (birthData.hour * 60 +
-                        birthData.minute -
-                        birthData.timezone * 60) /
-                        (24 * 60),
-                    swe.SE_GREG_CAL
-                );
-
-                // Calculate planets
-                const planets = [];
-                for (let i = 0; i <= 9; i++) {
-                    const position = swe.swe_calc_ut(jd, i, 0);
-                    planets.push({
-                        planet: swe.swe_get_planet_name(i),
-                        longitude: position[0],
-                        latitude: position[1],
-                        distance: position[2],
-                    });
-                }
-
-                // Calculate houses
-                const houses = swe.swe_houses(
-                    jd,
-                    birthData.lat,
-                    birthData.lon,
-                    birthData.hs
-                );
-
-                return { planets, houses };
-            }
-
-            // Display planets in table
-            function displayPlanets(planets) {
-                const tbody = document.getElementById("planetsTable");
-                tbody.innerHTML = "";
-
-                planets.forEach((planet, index) => {
-                    const zodiac = longitudeToZodiac(planet.longitude);
-                    const row = document.createElement("tr");
-                    row.className = index % 2 === 0 ? "bg-white" : "bg-gray-50";
-
-                    row.innerHTML = `
+                row.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${planet.planet}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700 font-semibold">${zodiac.sign}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${zodiac.position}</td>
@@ -457,135 +412,136 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${decimalToDMS(planet.latitude)}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${planet.distance.toFixed(3)}</td>
                 `;
-                    tbody.appendChild(row);
-                });
-            }
+                tbody.appendChild(row);
+            });
+        }
 
-            // Display houses in table
-            function displayHouses(houses) {
-                const tbody = document.getElementById("housesTable");
-                tbody.innerHTML = "";
+        // Display houses in table
+        function displayHouses(houses) {
+            const tbody = document.getElementById("housesTable");
+            tbody.innerHTML = "";
 
-                houses.cusps.forEach((cusp, index) => {
-                    const zodiac = longitudeToZodiac(cusp);
-                    const row = document.createElement("tr");
-                    row.className = index % 2 === 0 ? "bg-white" : "bg-gray-50";
+            houses.cusps.forEach((cusp, index) => {
+                const zodiac = longitudeToZodiac(cusp);
+                const row = document.createElement("tr");
+                row.className = index % 2 === 0 ? "bg-white" : "bg-gray-50";
 
-                    row.innerHTML = `
+                row.innerHTML = `
                     <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">House ${index + 1}</td>
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700 font-semibold">${zodiac.sign}</td>
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-700">${zodiac.position}</td>
                 `;
-                    tbody.appendChild(row);
-                });
+                tbody.appendChild(row);
+            });
 
-                // Display important points
-                const importantPoints =
-                    document.getElementById("importantPoints");
-                const points = [
-                    { name: "Ascendant", value: houses.ascmc[0] },
-                    { name: "Midheaven", value: houses.ascmc[1] },
-                    { name: "ARMC", value: houses.ascmc[2] },
-                    { name: "Vertex", value: houses.ascmc[3] },
-                ];
+            // Display important points
+            const importantPoints =
+                document.getElementById("importantPoints");
+            const points = [
+                { name: "Ascendant", value: houses.ascmc[0] },
+                { name: "Midheaven", value: houses.ascmc[1] },
+                { name: "ARMC", value: houses.ascmc[2] },
+                { name: "Vertex", value: houses.ascmc[3] },
+            ];
 
-                importantPoints.innerHTML = points
-                    .map(point => {
-                        const zodiac = longitudeToZodiac(point.value);
-                        return `
+            importantPoints.innerHTML = points
+                .map(point => {
+                    const zodiac = longitudeToZodiac(point.value);
+                    return `
                     <div class="flex justify-between items-center p-2 bg-white rounded">
                         <span class="font-medium text-gray-700">${point.name}:</span>
                         <span class="text-gray-600">${zodiac.sign} ${zodiac.position}</span>
                     </div>
                 `;
-                    })
-                    .join("");
-            }
+                })
+                .join("");
+        }
 
-            // Form submission handler
-            document
-                .getElementById("birthForm")
-                .addEventListener("submit", async e => {
-                    e.preventDefault();
+        // Form submission handler
+        document
+            .getElementById("birthForm")
+            .addEventListener("submit", async e => {
+                e.preventDefault();
 
-                    const birthDate =
-                        document.getElementById("birthDate").value;
-                    const birthTime =
-                        document.getElementById("birthTime").value;
-                    const timezoneId =
-                        document.getElementById("timezone").value;
-                    const latitude = parseFloat(
-                        document.getElementById("latitude").value
-                    );
-                    const longitude = parseFloat(
-                        document.getElementById("longitude").value
-                    );
-                    const house_sys =
-                        document.getElementById("house-system").value;
-                    const ayanamsa = parseInt(
-                        document.getElementById("ayanamsa").value
-                    );
+                const birthDate =
+                    document.getElementById("birthDate").value;
+                const birthTime =
+                    document.getElementById("birthTime").value;
+                const timezoneId =
+                    document.getElementById("timezone").value;
+                const latitude = parseFloat(
+                    document.getElementById("latitude").value
+                );
+                const longitude = parseFloat(
+                    document.getElementById("longitude").value
+                );
+                const house_sys =
+                    document.getElementById("house-system").value;
+                const ayanamsa = parseInt(
+                    document.getElementById("ayanamsa").value
+                );
 
-                    const [year, month, day] = birthDate.split("-").map(Number);
-                    const [hour, minute] = birthTime.split(":").map(Number);
+                const [year, month, day] = birthDate.split("-").map(Number);
+                const [hour, minute] = birthTime.split(":").map(Number);
 
-                    try {
-                        const chartData = await calculateChart({
-                            year,
-                            month,
-                            day,
-                            hour,
-                            minute,
-                            // Calculate timezone offset for the selected timezone
-                            timezone: getTimezoneOffset(timezoneId),
-                            timezoneId,
-                            lat: latitude,
-                            lon: longitude,
-                            hs: house_sys,
-                            ayanamsa,
-                        });
-                        displayPlanets(chartData.planets);
-                        displayHouses(chartData.houses);
-                        document
-                            .getElementById("results")
-                            .classList.remove("hidden");
-                    } catch (error) {
-                        console.error("Error calculating chart:", error);
-                        alert(
-                            "Error calculating chart. Please check your inputs and try again."
-                        );
-                    }
-                });
-
-            // Initialize the page
-            window.addEventListener("load", () => {
-                populateTimezones();
-
-                // Create a new Date (now)
-                const now = new Date();
-
-                // Put values into elements
-                // Format YYYY-MM-DD
-                document.getElementById("birthDate").value = now
-                    .toISOString()
-                    .slice(0, 10);
-
-                // Format HH:MM:SS
-                document.getElementById("birthTime").value = now
-                    .toTimeString()
-                    .slice(0, 5);
-
-                // Get the IANA timezone string
-                document.getElementById("timezone").value =
-                    Intl.DateTimeFormat().resolvedOptions().timeZone;
-
-                // Auto-calculate on page load with default values after a short delay
-                setTimeout(() => {
+                try {
+                    const chartData = await calculateChart({
+                        year,
+                        month,
+                        day,
+                        hour,
+                        minute,
+                        // Calculate timezone offset for the selected timezone
+                        timezone: getTimezoneOffset(timezoneId),
+                        timezoneId,
+                        lat: latitude,
+                        lon: longitude,
+                        hs: house_sys,
+                        ayanamsa,
+                    });
+                    displayPlanets(chartData.planets);
+                    displayHouses(chartData.houses);
                     document
-                        .getElementById("birthForm")
-                        .dispatchEvent(new Event("submit"));
-                }, 100);
+                        .getElementById("results")
+                        .classList.remove("hidden");
+                } catch (error) {
+                    console.error("Error calculating chart:", error);
+                    alert(
+                        "Error calculating chart. Please check your inputs and try again."
+                    );
+                }
             });
-        </script>
-    </body>
+
+        // Initialize the page
+        window.addEventListener("load", () => {
+            populateTimezones();
+
+            // Create a new Date (now)
+            const now = new Date();
+
+            // Put values into elements
+            // Format YYYY-MM-DD
+            document.getElementById("birthDate").value = now
+                .toISOString()
+                .slice(0, 10);
+
+            // Format HH:MM:SS
+            document.getElementById("birthTime").value = now
+                .toTimeString()
+                .slice(0, 5);
+
+            // Get the IANA timezone string
+            document.getElementById("timezone").value =
+                Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+            // Auto-calculate on page load with default values after a short delay
+            setTimeout(() => {
+                document
+                    .getElementById("birthForm")
+                    .dispatchEvent(new Event("submit"));
+            }, 100);
+        });
+    </script>
+</body>
+
 </html>

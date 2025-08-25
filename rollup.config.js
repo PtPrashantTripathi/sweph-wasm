@@ -3,7 +3,7 @@ import resolve from "@rollup/plugin-node-resolve";
 import typescript from "@rollup/plugin-typescript";
 import url from "@rollup/plugin-url"; // for .wasm
 import copy from "rollup-plugin-copy"; // for raw emcc JS shim
-import { terser } from "rollup-plugin-terser";
+import terser from "@rollup/plugin-terser";
 
 export default {
     input: "src/index.ts",
@@ -40,9 +40,9 @@ export default {
             targets: [
                 { src: "src/wasm/swisseph.d.ts", dest: "dist/wasm" },
                 { src: "src/wasm/swisseph.wasm", dest: "dist" },
-                { src: "swisseph/ephe/*.se1", dest: "dist/ephe" },
             ],
             hook: "writeBundle",
+            verbose: true,
         }),
         terser(),
     ],
