@@ -256,7 +256,7 @@
 
     <script type="module">
         // Import your SwissEPH module
-        import SwissEPH from "https://unpkg.com/sweph-wasm";
+        import SwissEPH from "https://unpkg.com/sweph-wasm/dist/index.js";
 
         // Populate timezone dropdown with all supported timezones
         function populateTimezones() {
@@ -345,12 +345,11 @@
         // Function to calculate chart (replace with actual SwissEPH integration)
         async function calculateChart(birthData) {
             // This is where you would integrate your SwissEPH code
-            const ephemerisBaseUrl = "https://unpkg.com/sweph-wasm/ephe";
+            const ephemerisBaseUrl = "https://ptprashanttripathi.github.io/sweph-wasm/ephe/";
             const requiredEphemerisFiles = [
                 "seas_18.se1",
                 "sepl_18.se1",
                 "semo_18.se1",
-                "sefstars.txt",
             ];
 
             const swe = await SwissEPH.init();
