@@ -28,7 +28,7 @@ jobs:
             - name: Checkout Repository
               uses: actions/checkout@v4
               with:
-                  submodules: "true" # This ensures your swisseph submodule is also cloned.
+                  submodules: "recursive" # This ensures your swisseph submodule is also cloned.
 
             # Step 2: Set up the Node.js environment.
             # The `actions/setup-node` action configures the Node.js version and sets up
@@ -50,8 +50,6 @@ jobs:
             # The `shell: bash` is used to ensure the `source` command works correctly.
             - name: Install and Activate Emscripten SDK
               run: |
-                  git submodule init
-                  git submodule update --recursive --depth 1
                   git clone https://github.com/emscripten-core/emsdk.git ~/emsdk
                   ~/emsdk/emsdk install latest
                   ~/emsdk/emsdk activate latest
