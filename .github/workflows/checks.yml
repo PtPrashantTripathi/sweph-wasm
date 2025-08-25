@@ -55,6 +55,7 @@ jobs:
             # environment to make the build tools available.
             - name: Install and Activate Emscripten SDK
               run: |
+                  git submodule update --init --recursive --depth 1
                   git clone https://github.com/emscripten-core/emsdk.git ~/emsdk
                   ~/emsdk/emsdk install latest
                   ~/emsdk/emsdk activate latest
