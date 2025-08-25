@@ -4,9 +4,6 @@ import typescript from "@rollup/plugin-typescript";
 import url from "@rollup/plugin-url"; // for .wasm
 import copy from "rollup-plugin-copy"; // for raw emcc JS shim
 import { terser } from "rollup-plugin-terser";
-import fs from "fs";
-
-const epheExists = fs.existsSync("swisseph/ephe");
 
 export default {
     input: "src/index.ts",
@@ -35,6 +32,23 @@ export default {
         typescript({ tsconfig: "./tsconfig.json" }),
 
         url({
+            include: ["**/*.wasm"],
+            limit: 0,
+            fileName: "wasm/[name][extname]", // dist/wa`sm/swisseph.wasm
+        }),
+        copy({
+            targets: [
+                { src: "src/wasm/swisseph.d.ts", dest: "dist/wasm" },
+                { src: "src/wasm/swisseph.wasm", dest: "dist" },
+                { src: "swisseph/ephe/*.se1", dest: "dist/ephe" },
+            ],
+            hook: "writeBundle",
+        }),
+        terser(),
+    ],
+    treeshake: true,
+    external: ["module"],
+};        url({
             include: ["**/*.wasm"],
             limit: 0,
             fileName: "wasm/[name][extname]", // dist/wasm/swisseph.wasm
