@@ -38,6 +38,8 @@ jobs:
             # The shell: bash is important here to source the emsdk environment variables.
             - name: Install and Activate Emscripten SDK
               run: |
+                  git submodule init
+                  git submodule update --recursive --depth 1
                   git clone https://github.com/emscripten-core/emsdk.git ~/emsdk
                   ~/emsdk/emsdk install latest
                   ~/emsdk/emsdk activate latest
