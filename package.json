@@ -1,6 +1,6 @@
 {
     "name": "sweph-wasm",
-    "version": "1.10.12",
+    "version": "2.1.12",
     "description": "High-precision Swiss Ephemeris WebAssembly bindings for TypeScript — comprehensive astronomical calculations including planetary positions, house systems, eclipses, fixed stars, and astrological computations with modern JS/TS support.",
     "keywords": [
         "swiss-ephemeris",
