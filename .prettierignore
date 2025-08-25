@@ -1,13 +1,10 @@
 # Project-specific folders/files
-public/database
-*.se1
-*.webmanifest
+swisseph
 *.ico
 *.png
 
 # Source files to ignore for formatting
 *.c
-*.csv
 *.h
 *.ipynb
 *.min.js
@@ -34,9 +31,6 @@ coverage
 Thumbs.db
 ehthumbs.db
 *.pem
-
-# Changelog
-CHANGELOG.md
 
 # Lock files
 package-lock.json

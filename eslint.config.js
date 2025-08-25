@@ -8,7 +8,7 @@ import ts from "typescript-eslint";
 import { globalIgnores } from "eslint/config";
 
 export default ts.config([
-    globalIgnores(["dist", "node_modules"]),
+    globalIgnores(["dist", "swisseph", "node_modules"]),
     {
         files: ["**/*.ts"],
         extends: [prettier, js.configs.recommended, ts.configs.recommended],

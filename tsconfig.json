@@ -1,35 +1,30 @@
 {
     "compilerOptions": {
-        /* Base Options: */
-        "esModuleInterop": true,
-        "skipLibCheck": true,
-        "target": "ESNext",
         "allowJs": true,
-        "resolveJsonModule": true,
-        "moduleDetection": "force",
-        "isolatedModules": true,
-        "verbatimModuleSyntax": true,
-        /* Strictness */
-        "strict": true,
-        "noUncheckedIndexedAccess": true,
-        "noImplicitOverride": true,
-        /* If transpiling with TypeScript: */
-        "module": "ESNext",
-        "outDir": "dist",
-        "rootDir": "src",
-        /* AND if you're building for a library: */
         "declaration": true,
-        "useDefineForClassFields": true,
-        /* Bundler mode */
+        "erasableSyntaxOnly": true,
+        "declarationMap": true,
+        "esModuleInterop": true,
+        "isolatedModules": true,
+        "module": "ESNext",
+        "moduleDetection": "force",
         "moduleResolution": "bundler",
-        /* Linting */
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitOverride": true,
+        "noUncheckedIndexedAccess": true,
+        "noUncheckedSideEffectImports": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "erasableSyntaxOnly": true,
-        "noFallthroughCasesInSwitch": true,
-        "noUncheckedSideEffectImports": true,
-        "typeRoots": ["./node_modules/@types"]
+        "outDir": "dist",
+        "resolveJsonModule": true,
+        "rootDir": "src",
+        "skipLibCheck": true,
+        "strict": true,
+        "target": "ESNext",
+        "typeRoots": ["./node_modules/@types"],
+        "useDefineForClassFields": true,
+        "verbatimModuleSyntax": true
     },
-    "include": ["src"],
-    "exclude": ["node_modules", "dist", "test"]
+    "exclude": ["node_modules", "dist"],
+    "include": ["src"]
 }

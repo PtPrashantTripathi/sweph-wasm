@@ -18,21 +18,20 @@
  */
 import { beforeAll, describe, expect, it } from "vitest";
 
-import SwissEPH from "../src/";
+import SwissEPH from "../src";
 
 describe("Ephemeris Path Configuration", () => {
     let swe: SwissEPH;
 
     // A clear, descriptive name for the base URL where files are hosted.
     const ephemerisBaseUrl =
-        "https://github.com/aloistr/swisseph/raw/master/ephe/";
+        "https://unpkg.com/sweph-wasm/ephe";
 
     // Describes exactly what the array contains: the specific files needed for the test.
     const requiredEphemerisFiles = [
         "seas_18.se1",
         "sepl_18.se1",
-        "semo_18.se1",
-        "sefstars.txt",
+        "semo_18.se1"
     ];
 
     beforeAll(async () => {

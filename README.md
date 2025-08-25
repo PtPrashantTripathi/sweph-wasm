@@ -383,7 +383,6 @@ For issues and questions:
 - Documentation for API reference
 - Swiss Ephemeris official documentation for calculation details
 
-
 ### Development Setup
 
 ```bash

@@ -9,7 +9,7 @@ import {
 import { EpheFileMetadata } from "./utils/ephe_file_metadata";
 import { getBaseURLPath } from "./utils/get_base_url_path";
 import { SWEerror } from "./utils/swe_error";
-import Module, { type WASMModule } from "./wasm";
+import Module, { type SwissephModule } from "./wasm/swisseph";
 
 /** Wrapper class for Swiss Ephemeris WebAssembly bindings. */
 export default class SwissEPH {
@@ -671,14 +671,14 @@ export default class SwissEPH {
         this.SEMOD_DELTAT_STEPHENSON_ETC_2016;
 
     /** The Swisseph Emscripten WebAssembly Module instance. */
-    public wasm: WASMModule;
+    public wasm: SwissephModule;
 
     /**
      * Creates a new instance.
      *
      * @param wasm - Swisseph Emscripten WebAssembly Module instance
      */
-    constructor(wasm: WASMModule) {
+    constructor(wasm: SwissephModule) {
         this.wasm = wasm;
     }
 
@@ -797,7 +797,7 @@ export default class SwissEPH {
      * @param {number} tjd_et - Julian day (ephemeris time, TT)
      * @param {number} ipl - Target body ID (e.g., SE_MARS)
      * @param {number} iplctr - Center body ID (e.g., SE_JUPITER)
-     * @param {number} iflag - Computation flags (bitwise ORed SEFLG constants)
+     * @param {number} iflag - Computation flags (bitwise ORed SEFLG swe)
      * @returns {CelestialCoordinatesAdvance} Array of 6 numbers representing
      *   celestial position:
      *
@@ -1448,8 +1448,8 @@ export default class SwissEPH {
      *
      *   Throws `SWEerror` if the underlying C function returns an error flag.
      *
-     *   Const result = swe_gauquelin_sector(2413256, constants.SE_MOON, null,
-     *   constants.SEFLG_SWIEPH, 0, [15, 10, 0], 0, 0); console.log(`Sector:
+     *   Const result = swe_gauquelin_sector(2413256, swe.SE_MOON, null,
+     *   swe.SEFLG_SWIEPH, 0, [15, 10, 0], 0, 0); console.log(`Sector:
      *   ${Math.floor(result)}`);
      */
     swe_gauquelin_sector(
@@ -1500,7 +1500,7 @@ export default class SwissEPH {
      *
      *   Throws `SWEerror` if computation fails or flags are incompatible.
      *
-     *   Const result = swe_get_ayanamsa_ex_ut(2314234, constants.SEFLG_SWIEPH);
+     *   Const result = swe_get_ayanamsa_ex_ut(2314234, swe.SEFLG_SWIEPH);
      *   console.log(`Ayanamsa: ${result}`);
      */
     swe_get_ayanamsa_ex_ut(tjd_ut: number, iflags: number): number {
@@ -1531,7 +1531,7 @@ export default class SwissEPH {
      *
      *   Throws `SWEerror` if computation fails or flags are incompatible.
      *
-     *   Const result = swe_get_ayanamsa_ex(2314234, constants.SEFLG_SWIEPH);
+     *   Const result = swe_get_ayanamsa_ex(2314234, swe.SEFLG_SWIEPH);
      *   console.log(`Ayanamsa: ${result}`);
      */
     swe_get_ayanamsa_ex(tjd_et: number, iflags: number): number {
@@ -1603,7 +1603,7 @@ export default class SwissEPH {
      *   used (e.g., 431) }
      *
      *   // Perform a calculation to ensure ephemeris file is loaded calc(2342342,
-     *   constants.SE_VENUS, constants.SEFLG_SWIEPH);
+     *   swe.SE_VENUS, swe.SEFLG_SWIEPH);
      */
     swe_get_current_file_data(ifno: number): {
         /** Path to ephemeris file */
@@ -3047,17 +3047,17 @@ export default class SwissEPH {
         ipl: number,
         iflag: number
     ): [
-        /** Phase angle (Earth-planet-sun) */
-        phase_angle: number,
-        /** Phase (illumined fraction of disc) */
-        phase: number,
-        /** Elongation of planet */
-        elongation: number,
-        /** Apparent diameter of disc */
-        diameter: number,
-        /** Apparent magnitude */
-        magnitude: number,
-    ] {
+            /** Phase angle (Earth-planet-sun) */
+            phase_angle: number,
+            /** Phase (illumined fraction of disc) */
+            phase: number,
+            /** Elongation of planet */
+            elongation: number,
+            /** Apparent diameter of disc */
+            diameter: number,
+            /** Apparent magnitude */
+            magnitude: number,
+        ] {
         const attr = ArrayPointer.alloc(this.wasm, "double", 20);
         const serr = StringPointer.alloc(this.wasm, this.AS_MAXCH);
         const flag = this.wasm._swe_pheno_ut(
@@ -3090,17 +3090,17 @@ export default class SwissEPH {
         ipl: number,
         iflag: number
     ): [
-        /** Phase angle (Earth-planet-sun) */
-        phase_angle: number,
-        /** Phase (illumined fraction of disc) */
-        phase: number,
-        /** Elongation of planet */
-        elongation: number,
-        /** Apparent diameter of disc */
-        diameter: number,
-        /** Apparent magnitude */
-        magnitude: number,
-    ] {
+            /** Phase angle (Earth-planet-sun) */
+            phase_angle: number,
+            /** Phase (illumined fraction of disc) */
+            phase: number,
+            /** Elongation of planet */
+            elongation: number,
+            /** Apparent diameter of disc */
+            diameter: number,
+            /** Apparent magnitude */
+            magnitude: number,
+        ] {
         const attr = ArrayPointer.alloc(this.wasm, "double", 20);
         const serr = StringPointer.alloc(this.wasm, this.AS_MAXCH);
         const flag = this.wasm._swe_pheno(
@@ -3385,8 +3385,8 @@ export default class SwissEPH {
      *
      * @example
      *     await swe.swe_set_ephe_path(
-     *         "https://github.com/aloistr/swisseph/raw/refs/heads/master/ephe/",
-     *         ["seas_18.se1", "sepl_18.se1", "semo_18.se1", "sefstars.txt"]
+     *         "https://unpkg.com/sweph-wasm/ephe/",
+     *         ["seas_18.se1", "sepl_18.se1", "semo_18.se1"]
      *     );
      *
      * @param epheUrl - Base URL or directory path containing `.se1` ephemeris
@@ -3394,7 +3394,7 @@ export default class SwissEPH {
      * @throws {SWEerror} If no ephemeris files are successfully loaded.
      */
     async swe_set_ephe_path(
-        epheUrl: string = "https://github.com/aloistr/swisseph/raw/refs/heads/master/ephe/",
+        epheUrl: string = "https://unpkg.com/sweph-wasm/ephe/",
         fileNames: Array<string> = ["seas_18.se1", "sepl_18.se1", "semo_18.se1"]
     ): Promise<void> {
         const epheDir = "/ephe";
@@ -3480,9 +3480,9 @@ export default class SwissEPH {
      * @param {number} sid_mode Ayanamsa ID
      * @param {number} t0 Reference date in jd_ut for custom ayanamsas
      * @param {number} ayan_t0 Initial value in degrees for custom ayanamsas //
-     *   set ayanamsa to Lahiri set_sid_mode(constants.SE_SIDM_LAHIRI, 0, 0) //
+     *   set ayanamsa to Lahiri swe_set_sid_mode(swe.SE_SIDM_LAHIRI, 0, 0) //
      *   define custom ayanamsa as 25 degrees at J2000
-     *   set_sid_mode(constants.SE_SIDM_USER, 2451545, 25)
+     *   swe_set_sid_mode(swe.SE_SIDM_USER, 2451545, 25)
      */
     swe_set_sid_mode(sid_mode: number, t0: number, ayan_t0: number): void {
         this.wasm._swe_set_sid_mode(sid_mode, t0, ayan_t0);
@@ -3493,8 +3493,8 @@ export default class SwissEPH {
      *
      * @param {number} t_acc Tidal acceleration value // set custom value
      *   set_tid_acc(25.90); // set predefined value
-     *   set_tid_acc(constants.SE_TIDAL_DE403); // reset to auto
-     *   set_tid_acc(constants.SE_TIDAL_AUTOMATIC);
+     *   set_tid_acc(swe.SE_TIDAL_DE403); // reset to auto
+     *   set_tid_acc(swe.SE_TIDAL_AUTOMATIC);
      */
     swe_set_tid_acc(t_acc: number): void {
         this.wasm._swe_set_tid_acc(t_acc);
@@ -3508,7 +3508,7 @@ export default class SwissEPH {
      * @param {number} elevation Elevation in meters // set observer to 124'30E,
      *   23'30N, 1250 meters above sea level; set_topo(124.5, 23.5, 1250); //
      *   call swe_with topocentric flag let result = calc(2342341,
-     *   constants.SE_MOON, constants.SEFLG_SWIEPH | constants.SEFLG_TOPOCTR)
+     *   swe.SE_MOON, swe.SEFLG_SWIEPH | swe.SEFLG_TOPOCTR)
      */
     swe_set_topo(geolon: number, geolat: number, elevation: number): void {
         this.wasm._swe_set_topo(geolon, geolat, elevation);
@@ -4006,26 +4006,26 @@ export default class SwissEPH {
         objectname: string,
         helflag: number
     ): [
-        /**
-         * Limiting visual magnitude (object is visible if this value is bigger
-         * than the object's magnitude value)
-         */
-        visual_mag: number,
-        /** Altitude of the object */
-        obj_altitude: number,
-        /** Azimuth of the object */
-        obj_azimuth: number,
-        /** Altitude of the sun */
-        sun_altitude: number,
-        /** Azimuth of the sun */
-        sun_azimuth: number,
-        /** Altitude of the moon */
-        moon_altitude: number,
-        /** Azimuth of the moon */
-        moon_azimuth: number,
-        /** The object's magnitude */
-        magnitude: number,
-    ] {
+            /**
+             * Limiting visual magnitude (object is visible if this value is
+             * bigger than the object's magnitude value)
+             */
+            visual_mag: number,
+            /** Altitude of the object */
+            obj_altitude: number,
+            /** Azimuth of the object */
+            obj_azimuth: number,
+            /** Altitude of the sun */
+            sun_altitude: number,
+            /** Azimuth of the sun */
+            sun_azimuth: number,
+            /** Altitude of the moon */
+            moon_altitude: number,
+            /** Azimuth of the moon */
+            moon_azimuth: number,
+            /** The object's magnitude */
+            magnitude: number,
+        ] {
         const dgeoPtr = ArrayPointer.from(this.wasm, "double", 3, dgeo);
         const datmPtr = ArrayPointer.from(this.wasm, "double", 4, datm);
         const dobsPtr = ArrayPointer.from(this.wasm, "double", 6, dobs);
