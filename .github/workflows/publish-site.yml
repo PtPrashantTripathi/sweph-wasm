@@ -22,7 +22,7 @@ jobs:
             - name: Checkout Repository
               uses: actions/checkout@v4
               with:
-                  submodules: "true" # This ensures your swisseph submodule is also cloned.
+                  submodules: "recursive" # This ensures your swisseph submodule is also cloned.
 
             # Set up Node.js for building the project.
             - name: Setup Node.js
