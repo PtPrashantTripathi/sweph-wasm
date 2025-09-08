@@ -24,29 +24,13 @@ async function Module(moduleArg = {}) {
 
     // Determine the runtime environment we are in. You can customize this by
     // setting the ENVIRONMENT setting at compile time (see settings.js).
-    // Attempt to auto-detect the environment
-    var ENVIRONMENT_IS_WEB = typeof window == "object";
+    var ENVIRONMENT_IS_WEB = true;
 
-    var ENVIRONMENT_IS_WORKER = typeof WorkerGlobalScope != "undefined";
+    var ENVIRONMENT_IS_WORKER = false;
 
-    // N.b. Electron.js environment is simultaneously a NODE-environment, but
-    // also a web environment.
-    var ENVIRONMENT_IS_NODE =
-        typeof process == "object" &&
-        process.versions?.node &&
-        process.type != "renderer";
+    var ENVIRONMENT_IS_NODE = false;
 
-    var ENVIRONMENT_IS_SHELL =
-        !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIRONMENT_IS_WORKER;
-
-    if (ENVIRONMENT_IS_NODE) {
-        // When building an ES module `require` is not normally available.
-        // We need to use `createRequire()` to construct the require()` function.
-        const { createRequire } = await import("module");
-        /** @suppress {duplicate} */ var require = createRequire(
-            import.meta.url
-        );
-    }
+    var ENVIRONMENT_IS_SHELL = false;
 
     // --pre-jses are emitted after the Module integration code, so that they can
     // refer to Module (if they choose; they can also define Module)
@@ -73,62 +57,7 @@ async function Module(moduleArg = {}) {
     // Hooks that are implemented differently in different runtime environments.
     var readAsync, readBinary;
 
-    if (ENVIRONMENT_IS_NODE) {
-        const isNode =
-            typeof process == "object" &&
-            process.versions?.node &&
-            process.type != "renderer";
-        if (!isNode)
-            throw new Error(
-                "not compiled for this environment (did you build to HTML and try to run it not on the web, or set ENVIRONMENT to something - like node - and run it someplace else - like on the web?)"
-            );
-        var nodeVersion = process.versions.node;
-        var numericVersion = nodeVersion.split(".").slice(0, 3);
-        numericVersion =
-            numericVersion[0] * 1e4 +
-            numericVersion[1] * 100 +
-            numericVersion[2].split("-")[0] * 1;
-        if (numericVersion < 16e4) {
-            throw new Error(
-                "This emscripten-generated code requires node v16.0.0 (detected v" +
-                    nodeVersion +
-                    ")"
-            );
-        }
-        // These modules will usually be used on Node.js. Load them eagerly to avoid
-        // the complexity of lazy-loading.
-        var fs = require("fs");
-        if (_scriptName.startsWith("file:")) {
-            scriptDirectory =
-                require("path").dirname(
-                    require("url").fileURLToPath(_scriptName)
-                ) + "/";
-        }
-        // include: node_shell_read.js
-        readBinary = filename => {
-            // We need to re-wrap `file://` strings to URLs.
-            filename = isFileURI(filename) ? new URL(filename) : filename;
-            var ret = fs.readFileSync(filename);
-            assert(Buffer.isBuffer(ret));
-            return ret;
-        };
-        readAsync = async (filename, binary = true) => {
-            // See the comment in the `readBinary` function.
-            filename = isFileURI(filename) ? new URL(filename) : filename;
-            var ret = fs.readFileSync(filename, binary ? undefined : "utf8");
-            assert(binary ? Buffer.isBuffer(ret) : typeof ret == "string");
-            return ret;
-        };
-        // end include: node_shell_read.js
-        if (process.argv.length > 1) {
-            thisProgram = process.argv[1].replace(/\\/g, "/");
-        }
-        arguments_ = process.argv.slice(2);
-        quit_ = (status, toThrow) => {
-            process.exitCode = status;
-            throw toThrow;
-        };
-    } else if (ENVIRONMENT_IS_SHELL) {
+    if (ENVIRONMENT_IS_SHELL) {
         const isNode =
             typeof process == "object" &&
             process.versions?.node &&
@@ -159,17 +88,6 @@ async function Module(moduleArg = {}) {
             );
         {
             // include: web_or_worker_shell_read.js
-            if (ENVIRONMENT_IS_WORKER) {
-                readBinary = url => {
-                    var xhr = new XMLHttpRequest();
-                    xhr.open("GET", url, false);
-                    xhr.responseType = "arraybuffer";
-                    xhr.send(null);
-                    return new Uint8Array(
-                        /** @type {!ArrayBuffer} */ (xhr.response)
-                    );
-                };
-            }
             readAsync = async url => {
                 assert(
                     !isFileURI(url),
@@ -216,6 +134,16 @@ async function Module(moduleArg = {}) {
 
     // perform assertions in shell.js after we set up out() and err(), as otherwise
     // if an assertion fails it cannot print the message
+    assert(
+        !ENVIRONMENT_IS_WORKER,
+        "worker environment detected but not enabled at build time.  Add `worker` to `-sENVIRONMENT` to enable."
+    );
+
+    assert(
+        !ENVIRONMENT_IS_NODE,
+        "node environment detected but not enabled at build time.  Add `node` to `-sENVIRONMENT` to enable."
+    );
+
     assert(
         !ENVIRONMENT_IS_SHELL,
         "shell environment detected but not enabled at build time.  Add `shell` to `-sENVIRONMENT` to enable."
@@ -372,54 +300,7 @@ async function Module(moduleArg = {}) {
         );
     }
 
-    /**
-     * Intercept access to a global symbol. This enables us to give informative
-     * warnings/errors when folks attempt to use symbols they did not include in
-     * their build, or no symbols that no longer exist.
-     */ function hookGlobalSymbolAccess(sym, func) {
-        if (
-            typeof globalThis != "undefined" &&
-            !Object.getOwnPropertyDescriptor(globalThis, sym)
-        ) {
-            Object.defineProperty(globalThis, sym, {
-                configurable: true,
-                get() {
-                    func();
-                    return undefined;
-                },
-            });
-        }
-    }
-
-    function missingGlobal(sym, msg) {
-        hookGlobalSymbolAccess(sym, () => {
-            warnOnce(`\`${sym}\` is not longer defined by emscripten. ${msg}`);
-        });
-    }
-
-    missingGlobal("buffer", "Please use HEAP8.buffer or wasmMemory.buffer");
-
-    missingGlobal("asm", "Please use wasmExports instead");
-
     function missingLibrarySymbol(sym) {
-        hookGlobalSymbolAccess(sym, () => {
-            // Can't `abort()` here because it would break code that does runtime
-            // checks.  e.g. `if (typeof SDL === 'undefined')`.
-            var msg = `\`${sym}\` is a library symbol and not included by default; add it to your library.js __deps or to DEFAULT_LIBRARY_FUNCS_TO_INCLUDE on the command line`;
-            // DEFAULT_LIBRARY_FUNCS_TO_INCLUDE requires the name as it appears in
-            // library.js, which means $name for a JS name with no prefix, or name
-            // for a JS name like _name.
-            var librarySymbol = sym;
-            if (!librarySymbol.startsWith("_")) {
-                librarySymbol = "$" + sym;
-            }
-            msg += ` (e.g. -sDEFAULT_LIBRARY_FUNCS_TO_INCLUDE='${librarySymbol}')`;
-            if (isExportedByForceFilesystem(sym)) {
-                msg +=
-                    ". Alternatively, forcing filesystem support (-sFORCE_FILESYSTEM) can export this for you";
-            }
-            warnOnce(msg);
-        });
         // Any symbol that is not included from the JS library is also (by definition)
         // not exported on the Module object.
         unexportedRuntimeSymbol(sym);
@@ -573,76 +454,6 @@ async function Module(moduleArg = {}) {
         callRuntimeCallbacks(onPostRuns);
     }
 
-    // A counter of dependencies for calling run(). If we need to
-    // do asynchronous work before running, increment this and
-    // decrement it. Incrementing must happen in a place like
-    // Module.preRun (used by emcc to add file preloading).
-    // Note that you can add dependencies in preRun, even though
-    // it happens right before run - run will be postponed until
-    // the dependencies are met.
-    var runDependencies = 0;
-
-    var dependenciesFulfilled = null;
-
-    // overridden to take different actions when all run dependencies are fulfilled
-    var runDependencyTracking = {};
-
-    var runDependencyWatcher = null;
-
-    function addRunDependency(id) {
-        runDependencies++;
-        Module["monitorRunDependencies"]?.(runDependencies);
-        assert(id, "addRunDependency requires an ID");
-        assert(!runDependencyTracking[id]);
-        runDependencyTracking[id] = 1;
-        if (
-            runDependencyWatcher === null &&
-            typeof setInterval != "undefined"
-        ) {
-            // Check for missing dependencies every few seconds
-            runDependencyWatcher = setInterval(() => {
-                if (ABORT) {
-                    clearInterval(runDependencyWatcher);
-                    runDependencyWatcher = null;
-                    return;
-                }
-                var shown = false;
-                for (var dep in runDependencyTracking) {
-                    if (!shown) {
-                        shown = true;
-                        err("still waiting on run dependencies:");
-                    }
-                    err(`dependency: ${dep}`);
-                }
-                if (shown) {
-                    err("(end of list)");
-                }
-            }, 1e4);
-            // Prevent this timer from keeping the runtime alive if nothing
-            // else is.
-            runDependencyWatcher.unref?.();
-        }
-    }
-
-    function removeRunDependency(id) {
-        runDependencies--;
-        Module["monitorRunDependencies"]?.(runDependencies);
-        assert(id, "removeRunDependency requires an ID");
-        assert(runDependencyTracking[id]);
-        delete runDependencyTracking[id];
-        if (runDependencies == 0) {
-            if (runDependencyWatcher !== null) {
-                clearInterval(runDependencyWatcher);
-                runDependencyWatcher = null;
-            }
-            if (dependenciesFulfilled) {
-                var callback = dependenciesFulfilled;
-                dependenciesFulfilled = null;
-                callback();
-            }
-        }
-    }
-
     /** @param {string | number} [what] */ function abort(what) {
         Module["onAbort"]?.(what);
         what = "Aborted(" + what + ")";
@@ -740,7 +551,7 @@ async function Module(moduleArg = {}) {
     }
 
     async function instantiateAsync(binary, binaryFile, imports) {
-        if (!binary && !ENVIRONMENT_IS_NODE) {
+        if (!binary) {
             try {
                 var response = fetch(binaryFile, {
                     credentials: "same-origin",
@@ -778,14 +589,12 @@ async function Module(moduleArg = {}) {
         ) {
             wasmExports = instance.exports;
             wasmMemory = wasmExports["memory"];
+            Module["wasmMemory"] = wasmMemory;
             assert(wasmMemory, "memory not found in wasm exports");
             updateMemoryViews();
             assignWasmExports(wasmExports);
-            removeRunDependency("wasm-instantiate");
             return wasmExports;
         }
-        // wait for the pthread pool (if any)
-        addRunDependency("wasm-instantiate");
         // Prefer streaming instantiation if available.
         // Async compilation can be confusing when an error on the page overwrites Module
         // (for example, if the order of elements is wrong, and the one defining Module is
@@ -894,7 +703,7 @@ async function Module(moduleArg = {}) {
 
     var ptrToString = ptr => {
         assert(typeof ptr === "number");
-        // With CAN_ADDRESS_2GB or MEMORY64, pointers are already unsigned.
+        // Convert to 32-bit unsigned value
         ptr >>>= 0;
         return "0x" + ptr.toString(16).padStart(8, "0");
     };
@@ -951,7 +760,6 @@ async function Module(moduleArg = {}) {
         warnOnce.shown ||= {};
         if (!warnOnce.shown[text]) {
             warnOnce.shown[text] = 1;
-            if (ENVIRONMENT_IS_NODE) text = "warning: " + text;
             err(text);
         }
     };
@@ -1031,14 +839,7 @@ async function Module(moduleArg = {}) {
         join2: (l, r) => PATH.normalize(l + "/" + r),
     };
 
-    var initRandomFill = () => {
-        // This block is not needed on v19+ since crypto.getRandomValues is builtin
-        if (ENVIRONMENT_IS_NODE) {
-            var nodeCrypto = require("crypto");
-            return view => nodeCrypto.randomFillSync(view);
-        }
-        return view => crypto.getRandomValues(view);
-    };
+    var initRandomFill = () => view => crypto.getRandomValues(view);
 
     var randomFill = view => {
         // Lazily init on the first invocation.
@@ -1119,15 +920,15 @@ async function Module(moduleArg = {}) {
     };
 
     /**
-     * Given a pointer 'idx' to a null-terminated UTF8-encoded string in the
-     * given array that contains uint8 values, returns a copy of that string as
-     * a Javascript String object. heapOrArray is either a regular array, or a
+     * Given a pointer 'idx' to a null-terminated UTF8-encoded string in the given
+     * array that contains uint8 values, returns a copy of that string as a
+     * Javascript String object. heapOrArray is either a regular array, or a
      * JavaScript typed array view.
      *
      * @param {number} [idx]
      * @param {number} [maxBytesToRead]
-     * @param {boolean} [ignoreNul] - If true, the function will not stop on a
-     *   NUL character.
+     * @param {boolean} [ignoreNul] - If true, the function will not stop on a NUL
+     *   character.
      * @returns {string}
      */ var UTF8ArrayToString = (
         heapOrArray,
@@ -1277,31 +1078,7 @@ async function Module(moduleArg = {}) {
     var FS_stdin_getChar = () => {
         if (!FS_stdin_getChar_buffer.length) {
             var result = null;
-            if (ENVIRONMENT_IS_NODE) {
-                // we will read data by chunks of BUFSIZE
-                var BUFSIZE = 256;
-                var buf = Buffer.alloc(BUFSIZE);
-                var bytesRead = 0;
-                // For some reason we must suppress a closure warning here, even though
-                // fd definitely exists on process.stdin, and is even the proper way to
-                // get the fd of stdin,
-                // https://github.com/nodejs/help/issues/2136#issuecomment-523649904
-                // This started to happen after moving this logic out of library_tty.js,
-                // so it is related to the surrounding code in some unclear manner.
-                /** @suppress {missingProperties} */ var fd = process.stdin.fd;
-                try {
-                    bytesRead = fs.readSync(fd, buf, 0, BUFSIZE);
-                } catch (e) {
-                    // Cross-platform differences: on Windows, reading EOF throws an
-                    // exception, but on other OSes, reading EOF returns 0. Uniformize
-                    // behavior by treating the EOF exception to return 0.
-                    if (e.toString().includes("EOF")) bytesRead = 0;
-                    else throw e;
-                }
-                if (bytesRead > 0) {
-                    result = buf.slice(0, bytesRead).toString("utf-8");
-                }
-            } else if (
+            if (
                 typeof window != "undefined" &&
                 typeof window.prompt == "function"
             ) {
@@ -1870,12 +1647,12 @@ async function Module(moduleArg = {}) {
      *
      * @param {number} ptr
      * @param {number} [maxBytesToRead] - An optional length that specifies the
-     *   maximum number of bytes to read. You can omit this parameter to scan
-     *   the string until the first 0 byte. If maxBytesToRead is passed, and the
-     *   string at [ptr, ptr+maxBytesToReadr[ contains a null byte in the
-     *   middle, then the string will cut short at that byte index.
-     * @param {boolean} [ignoreNul] - If true, the function will not stop on a
-     *   NUL character.
+     *   maximum number of bytes to read. You can omit this parameter to scan the
+     *   string until the first 0 byte. If maxBytesToRead is passed, and the string
+     *   at [ptr, ptr+maxBytesToReadr[ contains a null byte in the middle, then the
+     *   string will cut short at that byte index.
+     * @param {boolean} [ignoreNul] - If true, the function will not stop on a NUL
+     *   character.
      * @returns {string}
      */ var UTF8ToString = (ptr, maxBytesToRead, ignoreNul) => {
         assert(
@@ -2029,6 +1806,65 @@ async function Module(moduleArg = {}) {
         while (1) {
             if (!runDependencyTracking[id]) return id;
             id = orig + Math.random();
+        }
+    };
+
+    var runDependencies = 0;
+
+    var dependenciesFulfilled = null;
+
+    var runDependencyTracking = {};
+
+    var runDependencyWatcher = null;
+
+    var removeRunDependency = id => {
+        runDependencies--;
+        Module["monitorRunDependencies"]?.(runDependencies);
+        assert(id, "removeRunDependency requires an ID");
+        assert(runDependencyTracking[id]);
+        delete runDependencyTracking[id];
+        if (runDependencies == 0) {
+            if (runDependencyWatcher !== null) {
+                clearInterval(runDependencyWatcher);
+                runDependencyWatcher = null;
+            }
+            if (dependenciesFulfilled) {
+                var callback = dependenciesFulfilled;
+                dependenciesFulfilled = null;
+                callback();
+            }
+        }
+    };
+
+    var addRunDependency = id => {
+        runDependencies++;
+        Module["monitorRunDependencies"]?.(runDependencies);
+        assert(id, "addRunDependency requires an ID");
+        assert(!runDependencyTracking[id]);
+        runDependencyTracking[id] = 1;
+        if (
+            runDependencyWatcher === null &&
+            typeof setInterval != "undefined"
+        ) {
+            // Check for missing dependencies every few seconds
+            runDependencyWatcher = setInterval(() => {
+                if (ABORT) {
+                    clearInterval(runDependencyWatcher);
+                    runDependencyWatcher = null;
+                    return;
+                }
+                var shown = false;
+                for (var dep in runDependencyTracking) {
+                    if (!shown) {
+                        shown = true;
+                        err("still waiting on run dependencies:");
+                    }
+                    err(`dependency: ${dep}`);
+                }
+                if (shown) {
+                    err("(end of list)");
+                }
+            }, 1e4);
         }
     };
 
@@ -3670,7 +3506,6 @@ async function Module(moduleArg = {}) {
                 // Command-line.
                 try {
                     obj.contents = readBinary(obj.url);
-                    obj.usedBytes = obj.contents.length;
                 } catch (e) {
                     throw new FS.ErrnoError(29);
                 }
@@ -4590,9 +4425,19 @@ async function Module(moduleArg = {}) {
             typeof Module["INITIAL_MEMORY"] == "undefined",
             "Detected runtime INITIAL_MEMORY setting.  Use -sIMPORTED_MEMORY to define wasmMemory dynamically"
         );
+        if (Module["preInit"]) {
+            if (typeof Module["preInit"] == "function")
+                Module["preInit"] = [Module["preInit"]];
+            while (Module["preInit"].length > 0) {
+                Module["preInit"].shift()();
+            }
+        }
+        consumedModuleProp("preInit");
     }
 
     // Begin runtime exports
+    Module["wasmMemory"] = wasmMemory;
+
     Module["setValue"] = setValue;
 
     Module["getValue"] = getValue;
@@ -4772,13 +4617,10 @@ async function Module(moduleArg = {}) {
 
     var unexportedSymbols = [
         "run",
-        "addRunDependency",
-        "removeRunDependency",
         "out",
         "err",
         "callMain",
         "abort",
-        "wasmMemory",
         "wasmExports",
         "HEAPF32",
         "HEAPF64",
@@ -4816,6 +4658,8 @@ async function Module(moduleArg = {}) {
         "wasmTable",
         "getUniqueRunDependency",
         "noExitRuntime",
+        "addRunDependency",
+        "removeRunDependency",
         "addOnPreRun",
         "addOnPostRun",
         "freeTableIndexes",
@@ -5753,8 +5597,6 @@ async function Module(moduleArg = {}) {
         /** @export */ segfault,
     };
 
-    var wasmExports = await createWasm();
-
     // include: postamble.js
     // === Auto-generated postamble setup entry stuff ===
     var calledRun;
@@ -5851,18 +5693,11 @@ async function Module(moduleArg = {}) {
         }
     }
 
-    function preInit() {
-        if (Module["preInit"]) {
-            if (typeof Module["preInit"] == "function")
-                Module["preInit"] = [Module["preInit"]];
-            while (Module["preInit"].length > 0) {
-                Module["preInit"].shift()();
-            }
-        }
-        consumedModuleProp("preInit");
-    }
+    var wasmExports;
 
-    preInit();
+    // In modularize mode the generated code is within a factory function so we
+    // can use await here (since it's not top-level-await).
+    wasmExports = await createWasm();
 
     run();
 
