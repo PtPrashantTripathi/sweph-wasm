@@ -24,7 +24,8 @@ describe("Ephemeris Path Configuration", () => {
     let swe: SwissEPH;
 
     // A clear, descriptive name for the base URL where files are hosted.
-    const ephemerisBaseUrl = "https://ptprashanttripathi.github.io/sweph-wasm/ephe/";
+    const ephemerisBaseUrl =
+        "https://ptprashanttripathi.github.io/sweph-wasm/ephe/";
 
     // Describes exactly what the array contains: the specific files needed for the test.
     const requiredEphemerisFiles = [
