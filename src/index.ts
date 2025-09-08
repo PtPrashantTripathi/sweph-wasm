@@ -4040,8 +4040,8 @@ export default class SwissEPH {
         helflag: number
     ): [
         /**
-         * Limiting visual magnitude (object is visible if this value is bigger
-         * than the object's magnitude value)
+         * Limiting visual magnitude (object is visible if this value is
+         * bigger than the object's magnitude value)
          */
         visual_mag: number,
         /** Altitude of the object */
