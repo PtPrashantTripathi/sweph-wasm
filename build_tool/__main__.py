@@ -26,6 +26,7 @@ def main():
         help="Enable verbose output for debugging.",
     )
     parser.add_argument(
+        "-t",
         "--targets",
         nargs="+",
         default=["node", "web", "worker"],

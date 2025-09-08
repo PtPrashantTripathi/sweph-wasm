@@ -198,7 +198,7 @@ class Builder:
 
     def _get_ts_template(self) -> str:
         """Returns the base string template for the .d.ts file."""
-        return """
+        return """/// <reference types="emscripten" />
 
 /**
  * TypeScript bindings for the Swisseph Emscripten-generated WebAssembly module.
@@ -206,6 +206,9 @@ class Builder:
  */
 export interface SwissephModule extends EmscriptenModule {
     // --- Standard Emscripten Runtime Methods ---
+    /* [MDN Reference](https://developer.mozilla.org/docs/WebAssembly/Reference/JavaScript_interface/Memory) */
+    wasmMemory: WebAssembly.Memory;
+
     /** Sets a value in the WebAssembly heap memory. */
     setValue: typeof setValue;
 
