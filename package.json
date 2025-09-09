@@ -1,6 +1,6 @@
 {
     "name": "sweph-wasm",
-    "version": "2.5.9",
+    "version": "2.6.9",
     "description": "High-precision Swiss Ephemeris WebAssembly bindings for TypeScript — comprehensive astronomical calculations including planetary positions, house systems, eclipses, fixed stars, and astrological computations with modern JS/TS support.",
     "keywords": [
         "swiss-ephemeris",
@@ -53,11 +53,17 @@
             "browser": "./dist/index.js",
             "types": "./dist/index.d.ts",
             "import": "./dist/index.js"
+        },
+        "./wasm/swisseph": {
+            "require": "./dist/wasm/swisseph.cjs",
+            "browser": "./dist/wasm/swisseph.js",
+            "types": "./dist/wasm/swisseph.d.ts",
+            "import": "./dist/wasm/swisseph.js"
         }
     },
     "main": "./dist/index.cjs",
     "module": "./dist/index.js",
-    "browser": "./dist/index.umd.js",
+    "browser": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "files": ["dist"],
     "scripts": {
@@ -81,11 +87,9 @@
     },
     "devDependencies": {
         "@eslint/js": "latest",
-        "@rollup/plugin-commonjs": "latest",
         "@rollup/plugin-node-resolve": "latest",
         "@rollup/plugin-terser": "latest",
         "@rollup/plugin-typescript": "latest",
-        "@rollup/plugin-url": "latest",
         "@types/emscripten": "latest",
         "@vitest/coverage-v8": "latest",
         "@vitest/ui": "latest",

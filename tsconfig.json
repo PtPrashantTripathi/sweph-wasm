@@ -1,30 +1,43 @@
 {
+    "build": {
+        "minify": true
+    },
     "compilerOptions": {
         "allowJs": true,
+        "allowSyntheticDefaultImports": true,
+        "baseUrl": ".",
         "declaration": true,
         "erasableSyntaxOnly": true,
-        "declarationMap": true,
         "esModuleInterop": true,
-        "isolatedModules": true,
+        "experimentalDecorators": true,
+        "forceConsistentCasingInFileNames": true,
+        "incremental": true,
+        "lib": ["ESNext", "DOM", "DOM.Iterable"],
         "module": "ESNext",
         "moduleDetection": "force",
         "moduleResolution": "bundler",
+        "noEmit": true,
         "noFallthroughCasesInSwitch": true,
         "noImplicitOverride": true,
         "noUncheckedIndexedAccess": true,
         "noUncheckedSideEffectImports": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
-        "outDir": "dist",
+        "preserveConstEnums": true,
+        "removeComments": false,
+        "paths": {
+            "src/*": ["src/*"]
+        },
         "resolveJsonModule": true,
-        "rootDir": "src",
         "skipLibCheck": true,
+        "sourceMap": true,
         "strict": true,
         "target": "ESNext",
         "typeRoots": ["./node_modules/@types"],
         "useDefineForClassFields": true,
-        "verbatimModuleSyntax": true
+        "verbatimModuleSyntax": true,
+        "outDir": "dist"
     },
     "exclude": ["node_modules", "dist"],
-    "include": ["src"]
+    "include": ["src/**/*.ts", "test/**/*.ts", "*.ts"]
 }
