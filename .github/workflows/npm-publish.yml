@@ -62,7 +62,7 @@ jobs:
             - name: Run Build
               run: |
                   npm run build
-                  cp -r ~/swisseph/ephe dist
+                  cp -r swisseph/ephe dist
 
             # Step 6: Publish the package to npm.
             # The `npm publish` command uploads the package to the npm registry.

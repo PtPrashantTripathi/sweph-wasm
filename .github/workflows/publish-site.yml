@@ -6,7 +6,7 @@ on:
     push:
         branches: [main]
         paths:
-            - "docs/**"
+            - "example/**"
 
 jobs:
     deploy:
@@ -19,15 +19,17 @@ jobs:
             id-token: write # Required to use OpenID Connect for authentication
 
         steps:
-            # Checkout the repository with all its history and submodules.
+            # Step 1: Checkout the repository code.
+            # The `actions/checkout` action is essential for making your repository's code
+            # available to the runner. It clones the code into the workflow's working directory.
             - name: Checkout Repository
               uses: actions/checkout@v4
+              with:
+                  submodules: "recursive" # This ensures your swisseph submodule is also cloned.
 
-            # Move the 'dist' folder into the 'example' folder.
-            - name: Move dist into example
-              run: |
-                  git clone https://github.com/aloistr/swisseph.git ~/swisseph
-                  cp -r ~/swisseph/ephe example
+            # Move the 'ephe' folder into the 'example' folder.
+            - name: Move ephe into example
+              run: cp -r swisseph/ephe example
 
             # Prepare the deployable artifact for GitHub Pages.
             - name: Setup Pages
