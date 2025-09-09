@@ -63,7 +63,7 @@ BASE_EMCC_FLAGS = [
 ]
 
 # Flags specific to the production environment
-PROD_EMCC_FLAGS = ["-O3", "-g0"]
+PROD_EMCC_FLAGS = ["-O3", "-g0"] # "--closure=1" very bad idea
 
 # JS methods to export from the Emscripten runtime
 EXPORTED_RUNTIME_METHODS = [

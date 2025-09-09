@@ -1,4 +1,8 @@
 import { type FixedLengthArray, toFixedLengthArray } from "fixed-len-array";
+import { EpheFileMetadata } from "src/utils/ephe_file_metadata";
+import { getBaseURLPath } from "src/utils/get_base_url_path";
+import { SWEerror } from "src/utils/swe_error";
+import type { SwissephModule } from "src/wasm/swisseph";
 import {
     ArrayPointer,
     NullPointer,
@@ -6,11 +10,6 @@ import {
     StringPointer,
     TypeConverter,
 } from "wasp-lib";
-
-import { EpheFileMetadata } from "./utils/ephe_file_metadata";
-import { getBaseURLPath } from "./utils/get_base_url_path";
-import { SWEerror } from "./utils/swe_error";
-import Module, { type SwissephModule } from "./wasm/swisseph";
 
 /** Wrapper class for Swiss Ephemeris WebAssembly bindings. */
 export default class SwissEPH {
@@ -684,13 +683,37 @@ export default class SwissEPH {
     }
 
     /**
-     * Static method for creating and initializing the Swisseph module.
+     * Static method for creating and initializing the Swisseph module. This
+     * method handles the asynchronous loading of the WebAssembly file.
      *
-     * @returns {Promise<SwissEPH>} : Promise<SwissEPH>
+     * @param wasm_path An optional path to the `swisseph.wasm` file. If not
+     *   provided, it defaults to a path relative to the current module.
+     * @returns A Promise that resolves to an initialized `SwissEPH` instance.
      */
-    static async init(): Promise<SwissEPH> {
+    public static async init(wasm_path?: string): Promise<SwissEPH> {
+        // Dynamically import the Emscripten-generated Module function.
+        // The path to the JS wrapper depends on your project structure.
+        const { default: Module } = await import("./wasm/swisseph");
+
         /** Swisseph Emscripten Module instance */
-        const wasm = await Module();
+        const wasm = await Module({
+            locateFile: (path: string, scriptDirectory: string) => {
+                // Intercept the request for the .wasm file to use the correct path.
+                if (path.endsWith("swisseph.wasm")) {
+                    // Use the provided path if available, otherwise construct the default URL.
+                    if (wasm_path) {
+                        return wasm_path;
+                    } else {
+                        // Using `import.meta.url` is a modern way to resolve paths relative to the current module.
+                        return new URL("wasm/swisseph.wasm", import.meta.url)
+                            .href;
+                    }
+                }
+                // For other files (like .data files), use the default Emscripten logic.
+                return scriptDirectory + path;
+            },
+        });
+
         return new SwissEPH(wasm);
     }
 
@@ -3413,7 +3436,8 @@ export default class SwissEPH {
 
     /**
      * Loads ephemeris files from a remote or local path into WASM FS and sets
-     * the ephemeris path.
+     * the ephemeris path. This version downloads files concurrently using
+     * Promise.all.
      *
      * @example
      *     await swe.swe_set_ephe_path("https://unpkg.com/sweph-wasm/ephe/", [
@@ -3427,7 +3451,7 @@ export default class SwissEPH {
      * @throws {SWEerror} If no ephemeris files are successfully loaded.
      */
     async swe_set_ephe_path(
-        epheUrl: string = "https://unpkg.com/sweph-wasm/ephe/",
+        epheUrl: string = "https://ptprashanttripathi.github.io/sweph-wasm/ephe/",
         fileNames: Array<string> = ["seas_18.se1", "sepl_18.se1", "semo_18.se1"]
     ): Promise<void> {
         const epheDir = "/ephe";
@@ -3436,35 +3460,45 @@ export default class SwissEPH {
             this.wasm.FS.mkdir(epheDir);
         }
         const baseUrl = getBaseURLPath(epheUrl);
-        const loaded: string[] = [];
-        for (const { name, desc, category } of EpheFileMetadata) {
-            try {
-                if (fileNames && !fileNames.includes(name)) continue;
-                const response = await fetch(`${baseUrl}/${name}`);
-                if (response.ok && response.status === 200) {
-                    const buffer = await response.arrayBuffer();
-                    const data = new Uint8Array(buffer);
-                    // ✅ 2. Delete file if it already exists before creating
-                    const filePath = `${epheDir}/${name}`;
-                    if (this.wasm.FS.analyzePath(filePath).exists) {
-                        this.wasm.FS.unlink(filePath); // remove existing file
+
+        // Filter files to download based on the provided fileNames array
+        const filesToDownload = EpheFileMetadata.filter(
+            ({ name }) => !fileNames || fileNames.includes(name)
+        );
+
+        // Create an array of promises for concurrent fetching and file creation
+        const downloadPromises = await Promise.all(
+            filesToDownload.map(async ({ name, desc, category }) => {
+                try {
+                    const response = await fetch(`${baseUrl}/${name}`);
+                    if (response.ok && response.status === 200) {
+                        const buffer = await response.arrayBuffer();
+                        const data = new Uint8Array(buffer);
+                        // Delete file if it already exists before creating
+                        const filePath = `${epheDir}/${name}`;
+                        if (this.wasm.FS.analyzePath(filePath).exists) {
+                            this.wasm.FS.unlink(filePath); // remove existing file
+                        }
+                        this.wasm.FS.createDataFile(
+                            epheDir,
+                            name,
+                            data,
+                            true, // readable
+                            true, // writable
+                            true // canOwn
+                        );
+                        return `${name.padEnd(14)}: ${category.padEnd(28)} [${desc}]`;
                     }
-                    this.wasm.FS.createDataFile(
-                        epheDir,
-                        name,
-                        data,
-                        true, // readable
-                        true, // writable
-                        true // canOwn
-                    );
-                    loaded.push(
-                        `${name.padEnd(14)}: ${category.padEnd(28)} [${desc}]`
-                    );
+                } catch (err) {
+                    console.error(`Skipped ${name} due to error:`, err);
                 }
-            } catch (err) {
-                console.error(`Skipped ${name} due to error:`, err);
-            }
-        }
+                return null; // Return null for failed downloads
+            })
+        );
+
+        // Wait for all promises to resolve
+        const loaded = downloadPromises.filter(Boolean) as string[];
+
         if (loaded.length === 0) {
             throw new SWEerror(
                 `No ephemeris files loaded from "${epheUrl}"`,
@@ -3473,6 +3507,7 @@ export default class SwissEPH {
         }
         console.log(loaded.join("\n"));
         console.log(`Total ephemeris files loaded: ${loaded.length}`);
+
         // Set ephemeris path in Swiss Ephemeris
         const ephePathPtr = StringPointer.from(
             this.wasm,
@@ -4040,8 +4075,8 @@ export default class SwissEPH {
         helflag: number
     ): [
         /**
-         * Limiting visual magnitude (object is visible if this value is
-         * bigger than the object's magnitude value)
+         * Limiting visual magnitude (object is visible if this value is bigger
+         * than the object's magnitude value)
          */
         visual_mag: number,
         /** Altitude of the object */

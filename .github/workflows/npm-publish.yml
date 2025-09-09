@@ -54,13 +54,15 @@ jobs:
                   ~/emsdk/emsdk install latest
                   ~/emsdk/emsdk activate latest
                   source ~/emsdk/emsdk_env.sh
-                  npm run build:wasm
+                  python3 -m build_tool -t web -e prod
               shell: bash
 
             # Step 5: Run the project build.
             # This command compiles and prepares your project for publishing.
             - name: Run Build
-              run: npm run build
+              run: |
+                  npm run build
+                  cp -r ~/swisseph/ephe dist
 
             # Step 6: Publish the package to npm.
             # The `npm publish` command uploads the package to the npm registry.

@@ -5,18 +5,24 @@ import simpleImportSort from "eslint-plugin-simple-import-sort";
 import globals from "globals";
 import js from "@eslint/js";
 import ts from "typescript-eslint";
-import { globalIgnores } from "eslint/config";
+import { globalIgnores, defineConfig } from "eslint/config";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
-export default ts.config([
-    globalIgnores(["dist", "swisseph", "node_modules"]),
+export default defineConfig([
+    globalIgnores(["dist", "node_modules", ".rollup.cache"]),
     {
-        files: ["**/*.ts"],
+        files: ["**/*.ts", "**/*.tsx"],
         extends: [prettier, js.configs.recommended, ts.configs.recommended],
         languageOptions: {
             ecmaVersion: "latest",
             sourceType: "module",
 
             globals: globals.browser,
+            parserOptions: {
+                project: "./tsconfig.json",
+                tsconfigRootDir: path.dirname(fileURLToPath(import.meta.url)),
+            },
         },
         plugins: {
             "unused-imports": unusedImports,
@@ -43,16 +49,16 @@ export default ts.config([
             "no-var": "warn",
             "object-shorthand": ["warn", "properties"],
 
-            eqeqeq: ["error", "always", { null: "ignore" }],
+            eqeqeq: ["warn", "always", { null: "ignore" }],
 
             "lines-between-class-members": [
-                "error",
+                "warn",
                 "always",
                 { exceptAfterSingleLine: true },
             ],
 
             "spaced-comment": [
-                "error",
+                "warn",
                 "always",
                 {
                     line: { markers: ["*package", "!", "/", ",", "="] },
@@ -70,7 +76,36 @@ export default ts.config([
                     },
                 },
             ],
-            // "symbol-description": "error",
+            "no-unexpected-multiline": "warn",
+            "no-warning-comments": [
+                "warn",
+                { terms: ["FIXME"], location: "anywhere" },
+            ],
+            "@typescript-eslint/no-unused-vars": [
+                "warn",
+                {
+                    args: "after-used",
+                    argsIgnorePattern: "^_",
+                    ignoreRestSiblings: true,
+                    varsIgnorePattern: "^ignored",
+                },
+            ],
+            "@typescript-eslint/no-import-type-side-effects": "warn",
+            "@typescript-eslint/consistent-type-imports": [
+                "warn",
+                {
+                    prefer: "type-imports",
+                    disallowTypeAnnotations: true,
+                    fixStyle: "inline-type-imports",
+                },
+            ],
+
+            "@typescript-eslint/no-misused-promises": [
+                "warn",
+                { checksVoidReturn: false },
+            ],
+
+            // "symbol-description": "warn",
         },
     },
 ]);

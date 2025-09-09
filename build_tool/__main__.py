@@ -2,8 +2,8 @@
 import argparse
 import subprocess
 from pathlib import Path
-
 from .builder import Builder
+from .download import download_files
 
 
 def main():
@@ -32,6 +32,13 @@ def main():
         default=["node", "web", "worker"],
         help="A list of Emscripten environments to build for (e.g., node web worker).",
     )
+    parser.add_argument(
+        "-d",
+        "--download",
+        action="store_true",
+        default=False,
+        help="download source file or not",
+    )
 
     args = parser.parse_args()
 
@@ -39,6 +46,8 @@ def main():
     base_dir = Path(__file__).parent.parent
 
     try:
+        if args.download:
+            download_files()
         builder = Builder(base_dir=base_dir, env=args.env, verbose=args.verbose)
         builder.run(targets=args.targets)
     except (EnvironmentError, FileNotFoundError, subprocess.CalledProcessError) as e:
