@@ -1,0 +1,25 @@
+{
+    "tasks": {
+        "build": "deno run --allow-all index.ts",
+        "build:prod": "deno run --allow-all index.ts -e prod",
+        "build:web": "deno run --allow-all index.ts -t web -e prod",
+        "download": "deno run --allow-all index.ts -d"
+    },
+    "lint": {
+        "rules": {
+            "tags": ["recommended"]
+        }
+    },
+    "fmt": {
+        "useTabs": false,
+        "lineWidth": 88,
+        "indentWidth": 4,
+        "semiColons": true,
+        "singleQuote": false
+    },
+    "compilerOptions": {
+        "strict": true,
+        "lib": ["deno.window", "deno.ns", "esnext"],
+        "allowJs": false
+    }
+}
