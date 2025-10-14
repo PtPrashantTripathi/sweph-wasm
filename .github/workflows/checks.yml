@@ -59,7 +59,7 @@ jobs:
                   ~/emsdk/emsdk install latest
                   ~/emsdk/emsdk activate latest
                   source ~/emsdk/emsdk_env.sh
-                  python3 -m build_tool -e prod
+                  npm run build:wasm:node
               shell: bash
 
             # Step 5: Run linting checks.

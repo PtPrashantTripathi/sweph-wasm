@@ -68,7 +68,10 @@
     "files": ["dist"],
     "scripts": {
         "build": "npm run clean && rollup -c",
-        "build:wasm": "python3 -m build_tool && npm run format",
+        "build:wasm": "tsx build-tool/index.ts && npm run format",
+        "build:wasm:node": "tsx build-tool/index.ts -e prod && npm run format",
+        "build:wasm:deno": "deno run --allow-all build-tool/index.ts -e prod && npm run format",
+        "build:wasm:dev": "tsx build-tool/index.ts -e dev -v",
         "clean": "rm -rf dist coverage",
         "format": "prettier --write \"**/*.{ts,js,json,md,yml}\"",
         "format:check": "prettier --check \"**/*.{ts,js,json,md,yml}\"",
@@ -91,6 +94,7 @@
         "@rollup/plugin-terser": "latest",
         "@rollup/plugin-typescript": "latest",
         "@types/emscripten": "latest",
+        "@types/node": "latest",
         "@vitest/coverage-v8": "latest",
         "@vitest/ui": "latest",
         "eslint": "latest",
@@ -103,6 +107,7 @@
         "rollup": "latest",
         "rollup-plugin-copy": "latest",
         "tslib": "latest",
+        "tsx": "latest",
         "typescript": "latest",
         "typescript-eslint": "latest",
         "vitest": "latest"
