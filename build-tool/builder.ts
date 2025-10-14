@@ -27,6 +27,7 @@ export class Builder {
     private buildDir: string;
     private env: string;
     private verbose: boolean;
+    private emsdkPath?: string;
     private metadata: FunctionMetadata[] = [];
 
     constructor(options: BuilderOptions) {
@@ -35,6 +36,7 @@ export class Builder {
         this.buildDir = path.join(this.baseDir, "src", "wasm");
         this.env = options.env;
         this.verbose = options.verbose;
+        this.emsdkPath = options.emsdkPath;
     }
 
     /**
@@ -51,10 +53,45 @@ export class Builder {
 
     /**
      * Checks if the Emscripten compiler (emcc) is available.
+     * If emsdkPath is provided, sources the emsdk environment first.
      */
     private async checkEmcc(): Promise<void> {
         console.log("Checking for Emscripten (emcc)...");
 
+        // If emsdk path is provided, source the environment
+        if (this.emsdkPath) {
+            console.log(`Sourcing Emscripten SDK from: ${this.emsdkPath}`);
+            const envScript = path.join(this.emsdkPath, "emsdk_env.sh");
+
+            // Check if emsdk_env.sh exists
+            if (!(await fs.exists(envScript))) {
+                throw new Error(
+                    `emsdk_env.sh not found at ${envScript}. Please check the --emsdk-path value.`
+                );
+            }
+
+            // Source the environment by running a shell command
+            // We'll check for emcc with the sourced environment
+            try {
+                const result = await runtimeProcess.spawn("bash", [
+                    "-c",
+                    `source ${envScript} && which emcc`,
+                ]);
+
+                if (result.code !== 0) {
+                    throw new Error("emcc not found after sourcing emsdk environment");
+                }
+
+                console.log("Emscripten found (from emsdk).");
+                return;
+            } catch (error) {
+                throw new Error(
+                    `Failed to source Emscripten SDK from ${this.emsdkPath}: ${error instanceof Error ? error.message : String(error)}`
+                );
+            }
+        }
+
+        // Normal PATH check if no emsdk path provided
         try {
             const result = await runtimeProcess.spawn("which", ["emcc"]);
             if (result.code !== 0) {
@@ -63,7 +100,7 @@ export class Builder {
             console.log("Emscripten found.");
         } catch (error) {
             throw new Error(
-                "Emscripten (emcc) not found. Please install and configure the Emscripten SDK."
+                "Emscripten (emcc) not found. Please install and configure the Emscripten SDK, or use --emsdk-path to specify its location."
             );
         }
     }
@@ -229,7 +266,16 @@ export class Builder {
         console.log(`Executing emcc command: ${command.join(" ")}`);
 
         try {
-            const result = await runtimeProcess.spawn(command[0], command.slice(1));
+            let result;
+
+            // If emsdkPath is provided, source the environment before running emcc
+            if (this.emsdkPath) {
+                const envScript = path.join(this.emsdkPath, "emsdk_env.sh");
+                const fullCommand = `source ${envScript} && ${command.join(" ")}`;
+                result = await runtimeProcess.spawn("bash", ["-c", fullCommand]);
+            } else {
+                result = await runtimeProcess.spawn(command[0], command.slice(1));
+            }
 
             if (result.code !== 0) {
                 console.error("emcc compilation failed.");

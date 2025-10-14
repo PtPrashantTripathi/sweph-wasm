@@ -25,6 +25,7 @@ function parseArgs(): CLIArgs {
         verbose: false,
         targets: ["node", "web", "worker"],
         download: false,
+        emsdkPath: undefined,
     };
 
     for (let i = 0; i < args.length; i++) {
@@ -80,6 +81,16 @@ function parseArgs(): CLIArgs {
                 parsed.download = true;
                 break;
 
+            case "-p":
+            case "--emsdk-path":
+                i++;
+                if (i >= args.length) {
+                    console.error("Missing path value for --emsdk-path");
+                    exit(1);
+                }
+                parsed.emsdkPath = args[i];
+                break;
+
             case "-h":
             case "--help":
                 printHelp();
@@ -113,6 +124,7 @@ Options:
   -t, --targets <targets> Space-separated list of Emscripten environments
                           to build for: node, web, worker (default: all three)
   -d, --download          Download source files before building
+  -p, --emsdk-path <path> Path to Emscripten SDK directory (sources emsdk_env.sh)
   -h, --help              Show this help message
 
 Examples:
@@ -141,6 +153,7 @@ async function main(): Promise<void> {
             baseDir,
             env: args.env,
             verbose: args.verbose,
+            emsdkPath: args.emsdkPath,
         });
 
         await builder.run(args.targets);

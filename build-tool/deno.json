@@ -3,6 +3,8 @@
         "build": "deno run --allow-all index.ts",
         "build:prod": "deno run --allow-all index.ts -e prod",
         "build:web": "deno run --allow-all index.ts -t web -e prod",
+        "build:node": "deno run --allow-all index.ts -t node -e prod -d",
+        "build:worker": "deno run --allow-all index.ts -t worker -e prod",
         "download": "deno run --allow-all index.ts -d"
     },
     "lint": {

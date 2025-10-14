@@ -20,6 +20,7 @@ export interface CLIArgs {
     verbose: boolean;
     targets: EmscriptenTarget[];
     download: boolean;
+    emsdkPath?: string;
 }
 
 /**
@@ -50,6 +51,7 @@ export interface BuilderOptions {
     baseDir: string;
     env: BuildEnv;
     verbose: boolean;
+    emsdkPath?: string;
 }
 
 /**
