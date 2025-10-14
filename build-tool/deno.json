@@ -1,11 +1,15 @@
 {
     "tasks": {
         "build": "deno run --allow-all index.ts",
-        "build:prod": "deno run --allow-all index.ts -e prod",
-        "build:web": "deno run --allow-all index.ts -t web -e prod",
-        "build:node": "deno run --allow-all index.ts -t node -e prod -d",
-        "build:worker": "deno run --allow-all index.ts -t worker -e prod",
-        "download": "deno run --allow-all index.ts -d"
+        "build:dev": "deno run --allow-all index.ts  -p \"$HOME/emsdk\" -e dev",
+        "build:prod": "deno run --allow-all index.ts  -p \"$HOME/emsdk\" -e prod",
+        "build:web": "deno run --allow-all index.ts  -p \"$HOME/emsdk\" -t web -e prod",
+        "build:node": "deno run --allow-all index.ts -p \"$HOME/emsdk\" -t node -e prod",
+        "build:worker": "deno run --allow-all index.ts -p \"$HOME/emsdk\" -t worker -e prod",
+        "build:web:dev": "deno run --allow-all index.ts -p \"$HOME/emsdk\" -t web -e dev",
+        "build:node:dev": "deno run --allow-all index.ts -p \"$HOME/emsdk\" -t node -e dev",
+        "build:worker:dev": "deno run --allow-all index.ts -p \"$HOME/emsdk\" -t worker -e dev",
+        "download": "deno run --allow-all index.ts -p \"$HOME/emsdk\" -d"
     },
     "lint": {
         "rules": {
