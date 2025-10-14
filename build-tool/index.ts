@@ -1,9 +1,10 @@
 #!/usr/bin/env -S deno run --allow-all
 /**
- * Main entry point for the Swisseph WebAssembly build tool.
- * Ported from Python build_tool/__main__.py
+ * Main entry point for the Swisseph WebAssembly build tool. Ported from Python
+ * build_tool/**main**.py
  *
  * This file can be run with either Deno or Node.js (via tsx):
+ *
  * - Deno: deno run --allow-all build-tool/index.ts
  * - Node: tsx build-tool/index.ts
  */
@@ -13,9 +14,7 @@ import { Builder } from "./builder.ts";
 import { downloadFiles } from "./download.ts";
 import type { CLIArgs, BuildEnv, EmscriptenTarget } from "./types.ts";
 
-/**
- * Parses command-line arguments.
- */
+/** Parses command-line arguments. */
 function parseArgs(): CLIArgs {
     // Get arguments based on runtime
     const args = isDeno ? Deno.args : globalThis.process.argv.slice(2);
@@ -107,9 +106,7 @@ function parseArgs(): CLIArgs {
     return parsed;
 }
 
-/**
- * Prints help message.
- */
+/** Prints help message. */
 function printHelp(): void {
     const runtime = isDeno ? "Deno" : "Node.js";
     console.log(`
@@ -134,14 +131,14 @@ Examples:
 `);
 }
 
-/**
- * Main function.
- */
+/** Main function. */
 async function main(): Promise<void> {
     const args = parseArgs();
 
     // The base directory is the parent of the 'build-tool' directory
-    const baseDir = path.dirname(path.dirname(new URL(import.meta.url).pathname));
+    const baseDir = path.dirname(
+        path.dirname(new URL(import.meta.url).pathname)
+    );
 
     try {
         if (args.download) {

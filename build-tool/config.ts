@@ -1,13 +1,11 @@
 /**
- * Configuration constants for the build tool.
- * Ported from Python build_tool/config.py
+ * Configuration constants for the build tool. Ported from Python
+ * build_tool/config.py
  */
 
 import type { CTypeToJSMap } from "./types.ts";
 
-/**
- * Source files to download and compile from the Swiss Ephemeris repository.
- */
+/** Source files to download and compile from the Swiss Ephemeris repository. */
 export const SOURCE_FILES: string[] = [
     "swemptab.h",
     "swemmoon.c",
@@ -29,9 +27,7 @@ export const SOURCE_FILES: string[] = [
     "sweodef.h",
 ];
 
-/**
- * C to JavaScript type mapping for TypeScript declaration generation.
- */
+/** C to JavaScript type mapping for TypeScript declaration generation. */
 export const CTYPE_TO_JS: CTypeToJSMap = {
     int: "number",
     short: "number",
@@ -55,9 +51,7 @@ export const CTYPE_TO_JS: CTypeToJSMap = {
     centisec: "number",
 };
 
-/**
- * Common Emscripten compiler flags for all builds.
- */
+/** Common Emscripten compiler flags for all builds. */
 export const BASE_EMCC_FLAGS: string[] = [
     "-sWASM=1",
     "-sMODULARIZE=1",
@@ -70,18 +64,14 @@ export const BASE_EMCC_FLAGS: string[] = [
     "--no-entry",
 ];
 
-/**
- * Production-specific Emscripten compiler flags.
- */
+/** Production-specific Emscripten compiler flags. */
 export const PROD_EMCC_FLAGS: string[] = [
     "-O3",
     "-g0",
     // Note: --closure=1 is commented out in Python version as "very bad idea"
 ];
 
-/**
- * JavaScript methods to export from the Emscripten runtime.
- */
+/** JavaScript methods to export from the Emscripten runtime. */
 export const EXPORTED_RUNTIME_METHODS: string[] = [
     "setValue",
     "getValue",
@@ -92,8 +82,6 @@ export const EXPORTED_RUNTIME_METHODS: string[] = [
     "wasmMemory",
 ];
 
-/**
- * Base URL for downloading Swiss Ephemeris source files.
- */
+/** Base URL for downloading Swiss Ephemeris source files. */
 export const SWISSEPH_BASE_URL =
     "https://raw.githubusercontent.com/aloistr/swisseph/refs/heads/master";

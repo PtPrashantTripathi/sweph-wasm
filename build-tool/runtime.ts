@@ -1,6 +1,6 @@
 /**
- * Runtime abstraction layer for Deno and Node.js compatibility.
- * Provides unified interfaces for file system, subprocess, and path operations.
+ * Runtime abstraction layer for Deno and Node.js compatibility. Provides
+ * unified interfaces for file system, subprocess, and path operations.
  */
 
 // Runtime detection

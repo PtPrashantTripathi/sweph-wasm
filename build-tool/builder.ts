@@ -1,6 +1,6 @@
 /**
- * Core build orchestration for Swisseph WebAssembly module.
- * Ported from Python build_tool/builder.py
+ * Core build orchestration for Swisseph WebAssembly module. Ported from Python
+ * build_tool/builder.py
  */
 
 import { fs, path, process as runtimeProcess, console } from "./runtime.ts";
@@ -18,9 +18,7 @@ import type {
     EmscriptenTarget,
 } from "./types.ts";
 
-/**
- * Orchestrates the entire WebAssembly build process for Swisseph.
- */
+/** Orchestrates the entire WebAssembly build process for Swisseph. */
 export class Builder {
     private baseDir: string;
     private srcDir: string;
@@ -39,9 +37,7 @@ export class Builder {
         this.emsdkPath = options.emsdkPath;
     }
 
-    /**
-     * Executes the full build pipeline.
-     */
+    /** Executes the full build pipeline. */
     async run(targets: EmscriptenTarget[]): Promise<void> {
         console.log("Starting Swisseph WASM build process...");
         await this.checkEmcc();
@@ -52,8 +48,8 @@ export class Builder {
     }
 
     /**
-     * Checks if the Emscripten compiler (emcc) is available.
-     * If emsdkPath is provided, sources the emsdk environment first.
+     * Checks if the Emscripten compiler (emcc) is available. If emsdkPath is
+     * provided, sources the emsdk environment first.
      */
     private async checkEmcc(): Promise<void> {
         console.log("Checking for Emscripten (emcc)...");
@@ -79,7 +75,9 @@ export class Builder {
                 ]);
 
                 if (result.code !== 0) {
-                    throw new Error("emcc not found after sourcing emsdk environment");
+                    throw new Error(
+                        "emcc not found after sourcing emsdk environment"
+                    );
                 }
 
                 console.log("Emscripten found (from emsdk).");
@@ -105,9 +103,7 @@ export class Builder {
         }
     }
 
-    /**
-     * Parses the C header file to extract function metadata.
-     */
+    /** Parses the C header file to extract function metadata. */
     private async parseMetadata(): Promise<void> {
         console.log("Parsing header file to extract function metadata...");
 
@@ -134,7 +130,9 @@ export class Builder {
 
         // Find all function definitions
         const matches = text.match(/ext_def[\s\S]*?\);/g) || [];
-        console.log(`Found ${matches.length} potential functions in header file.`);
+        console.log(
+            `Found ${matches.length} potential functions in header file.`
+        );
 
         // Parse each function signature
         for (const match of matches) {
@@ -153,9 +151,7 @@ export class Builder {
         console.log(`Successfully parsed ${this.metadata.length} functions.`);
     }
 
-    /**
-     * Parses a single C function signature string.
-     */
+    /** Parses a single C function signature string. */
     private parseFunctionSignature(signature: string): FunctionMetadata {
         const cleanSig = signature.trim().replace(/;$/, "");
 
@@ -175,9 +171,9 @@ export class Builder {
         if (argStr.trim().toLowerCase() !== "void") {
             const argParts = argStr
                 .split(",")
-                .map((arg) => arg.trim())
-                .filter((arg) => arg);
-            args.push(...argParts.map((arg) => this.parseArg(arg)));
+                .map(arg => arg.trim())
+                .filter(arg => arg);
+            args.push(...argParts.map(arg => this.parseArg(arg)));
         }
 
         return {
@@ -189,20 +185,14 @@ export class Builder {
         };
     }
 
-    /**
-     * Parses a single C function argument string.
-     */
+    /** Parses a single C function argument string. */
     private parseArg(argStr: string): FunctionArg {
         const tokens = argStr.trim().split(/\s+/);
         if (tokens.length < 2) {
             throw new Error(`Malformed argument: ${argStr}`);
         }
 
-        const cType = tokens
-            .slice(0, -1)
-            .join(" ")
-            .replace(/\*/g, "")
-            .trim();
+        const cType = tokens.slice(0, -1).join(" ").replace(/\*/g, "").trim();
         const name = tokens[tokens.length - 1].replace(/\*/g, "").trim();
         const isPtr = argStr.includes("*");
 
@@ -214,9 +204,7 @@ export class Builder {
         };
     }
 
-    /**
-     * Compiles the C source into WASM for specified targets.
-     */
+    /** Compiles the C source into WASM for specified targets. */
     private async buildTargets(targets: EmscriptenTarget[]): Promise<void> {
         // Cleanup last build if any
         if (await fs.exists(this.buildDir)) {
@@ -231,13 +219,13 @@ export class Builder {
         const exportedFuncs = [
             "_free",
             "_malloc",
-            ...this.metadata.map((info) => `_${info.func_name}`),
+            ...this.metadata.map(info => `_${info.func_name}`),
         ];
 
         const command = ["emcc"];
 
         // Add source files
-        const cFiles = SOURCE_FILES.filter((f) => f.endsWith(".c")).map((f) =>
+        const cFiles = SOURCE_FILES.filter(f => f.endsWith(".c")).map(f =>
             path.join(this.srcDir, f)
         );
         command.push(...cFiles);
@@ -272,9 +260,15 @@ export class Builder {
             if (this.emsdkPath) {
                 const envScript = path.join(this.emsdkPath, "emsdk_env.sh");
                 const fullCommand = `source ${envScript} && ${command.join(" ")}`;
-                result = await runtimeProcess.spawn("bash", ["-c", fullCommand]);
+                result = await runtimeProcess.spawn("bash", [
+                    "-c",
+                    fullCommand,
+                ]);
             } else {
-                result = await runtimeProcess.spawn(command[0], command.slice(1));
+                result = await runtimeProcess.spawn(
+                    command[0],
+                    command.slice(1)
+                );
             }
 
             if (result.code !== 0) {
@@ -291,9 +285,7 @@ export class Builder {
         }
     }
 
-    /**
-     * Generates the swisseph.d.ts TypeScript declaration file.
-     */
+    /** Generates the swisseph.d.ts TypeScript declaration file. */
     private async generateTsDeclaration(): Promise<void> {
         console.log("Generating TypeScript declaration file...");
 
@@ -320,7 +312,7 @@ export class Builder {
 
             // Function signature
             const argSig = fn.args
-                .map((arg) => `${arg.name}: ${arg.js_type}`)
+                .map(arg => `${arg.name}: ${arg.js_type}`)
                 .join(", ");
             const signature = `    _${fn.func_name}(${argSig}): ${fn.js_type};`;
 
@@ -337,9 +329,7 @@ export class Builder {
         console.log(`TypeScript declaration generated -> ${outputFile}`);
     }
 
-    /**
-     * Returns the base string template for the .d.ts file.
-     */
+    /** Returns the base string template for the .d.ts file. */
     private getTsTemplate(): string {
         return `/// <reference types="emscripten" />
 

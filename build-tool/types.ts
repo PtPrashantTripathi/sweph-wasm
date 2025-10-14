@@ -1,20 +1,12 @@
-/**
- * Type definitions for the build tool.
- */
+/** Type definitions for the build tool. */
 
-/**
- * Build environment type.
- */
+/** Build environment type. */
 export type BuildEnv = "dev" | "prod";
 
-/**
- * Emscripten target environment.
- */
+/** Emscripten target environment. */
 export type EmscriptenTarget = "node" | "web" | "worker";
 
-/**
- * CLI arguments interface.
- */
+/** CLI arguments interface. */
 export interface CLIArgs {
     env: BuildEnv;
     verbose: boolean;
@@ -23,9 +15,7 @@ export interface CLIArgs {
     emsdkPath?: string;
 }
 
-/**
- * Represents a parsed C function argument.
- */
+/** Represents a parsed C function argument. */
 export interface FunctionArg {
     name: string;
     pointer: boolean;
@@ -33,9 +23,7 @@ export interface FunctionArg {
     js_type: string;
 }
 
-/**
- * Represents a parsed C function signature.
- */
+/** Represents a parsed C function signature. */
 export interface FunctionMetadata {
     func_name: string;
     pointer: boolean;
@@ -44,9 +32,7 @@ export interface FunctionMetadata {
     args: FunctionArg[];
 }
 
-/**
- * Builder class options.
- */
+/** Builder class options. */
 export interface BuilderOptions {
     baseDir: string;
     env: BuildEnv;
@@ -54,9 +40,7 @@ export interface BuilderOptions {
     emsdkPath?: string;
 }
 
-/**
- * C to JavaScript type mapping.
- */
+/** C to JavaScript type mapping. */
 export interface CTypeToJSMap {
     [key: string]: string;
 }

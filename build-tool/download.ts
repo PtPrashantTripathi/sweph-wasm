@@ -1,6 +1,6 @@
 /**
- * File download functionality for Swiss Ephemeris source files.
- * Ported from Python build_tool/download.py
+ * File download functionality for Swiss Ephemeris source files. Ported from
+ * Python build_tool/download.py
  */
 
 import { fs, path, console } from "./runtime.ts";
